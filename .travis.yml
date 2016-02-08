@@ -20,7 +20,7 @@ android:
     - addon-google_apis-google-23
 
 before_script:
-    - gimmie 1.5
+    - gimme 1.5
 
 script:
     - Dispotrains/gradlew build connectedCheck
