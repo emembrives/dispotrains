@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+    <link href='https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.css' rel='stylesheet' />
+    <link href='analysis.css' rel='stylesheet' />
+    <title>Analysis of Infomobi data</title>
+  </head>
+  <body>
+    <div id='map'>
+    </div>
+<script type="text/javascript">
+L.mapbox.accessToken = 'pk.eyJ1IjoiZW1lbWJyaXZlcyIsImEiOiIwNDViZWQyODJhNTczNTg4ZWEzNzI4MzllNzk4ODk1NyJ9.ijO7LzQGt_kX1IwAOrUYzA'
+map = L.mapbox.map('map', 'emembrives.d5f86755')
+  .fitBounds([[49.241299, 3.55852], [48.120319, 1.4467]]);
+
+var pointTypes = d3.map(),
+    points = [],
+    lastSelectedPoint;
+
+var voronoi = d3.geom.voronoi()
+    .x(function(d) { return d.x; })
+    .y(function(d) { return d.y; });
+
+var selectPoint = function() {
+  d3.selectAll('.selected').classed('selected', false);
+
+  var cell = d3.select(this),
+    point = cell.datum();
+
+  lastSelectedPoint = point;
+  cell.classed('selected', true);
+
+  d3.select('#selected h1')
+    .html('')
+    .append('a')
+    .text(point.displayname + ", " + point.city)
+    .attr('href', point.url)
+    .attr('target', '_blank')
+}
+
+var drawWithLoading = function(e){
+  d3.select('#loading').classed('visible', true);
+  if (e && e.type == 'viewreset') {
+    d3.select('#overlay').remove();
+  }
+  setTimeout(function(){
+    draw();
+    d3.select('#loading').classed('visible', false);
+  }, 0);
+}
+
+var draw = function() {
+  d3.select('#overlay').remove();
+
+  var bounds = map.getBounds(),
+      topLeft = map.latLngToLayerPoint(bounds.getNorthWest()),
+      bottomRight = map.latLngToLayerPoint(bounds.getSouthEast()),
+      existing = d3.set(),
+      drawLimit = bounds.pad(0.4);
+
+  filteredPoints = points.filter(function(d) {
+    var latlng = new L.LatLng(d.position.latitude, d.position.longitude);
+
+    if (!drawLimit.contains(latlng)) { return false };
+
+    var point = map.latLngToLayerPoint(latlng);
+
+    key = point.toString();
+    if (existing.has(key)) { return false };
+    existing.add(key);
+
+    d.x = point.x;
+    d.y = point.y;
+    return true;
+  });
+
+  voronoi(filteredPoints).forEach(function(d) { d.point.cell = d; });
+
+  var svg = d3.select(map.getPanes().overlayPane).append("svg")
+    .attr('id', 'overlay')
+    .attr("class", "leaflet-zoom-hide")
+    .style("width", map.getSize().x + 'px')
+    .style("height", map.getSize().y + 'px')
+    .style("margin-left", topLeft.x + "px")
+    .style("margin-top", topLeft.y + "px");
+
+  var g = svg.append("g")
+    .attr("transform", "translate(" + (-topLeft.x) + "," + (-topLeft.y) + ")");
+
+  var svgPoints = g.attr("class", "points")
+    .selectAll("g")
+      .data(filteredPoints)
+    .enter().append("g")
+      .attr("class", "point");
+
+  var buildPathFromPoint = function(point) {
+    return "M" + point.cell.join("L") + "Z";
+  }
+
+  svgPoints.append("path")
+    .attr("class", "point-cell")
+    .attr("d", buildPathFromPoint)
+    .on('click', selectPoint)
+    .classed("selected", function(d) { return lastSelectedPoint == d} )
+    .classed("malfunction", function(d) { return !d.good; });
+
+  svgPoints.append("circle")
+    .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+    .style('fill', function(d) { return '#' + d.color } )
+    .attr("r", 1);
+}
+
+var mapLayer = {
+  onAdd: function(map) {
+    map.on('viewreset moveend', drawWithLoading);
+    drawWithLoading();
+  }
+};
+
+map.on('ready', function() {
+  d3.json("http://dispotrains.membrives.fr/app/GetStations/", function(data) {
+    data.forEach(function (d) {
+      var good = true;
+      for (var i = 0; i < d.elevators.length; i++) {
+        if (d.elevators[i].status.state != "Disponible") {
+          good = false;
+          break;
+        }
+      }
+      d.good = good;
+    });
+    points = data;
+    drawWithLoading();
+    map.addLayer(mapLayer);
+  });
+  /*d3.csv("stations-coordinates.csv", function(csv) {
+    points = csv;
+    drawWithLoading();
+    map.addLayer(mapLayer);
+  })*/
+});
+
+</script>
+  <div id="selected"><h1></h1></div>
+  </body>
+</html>

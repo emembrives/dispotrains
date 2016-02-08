@@ -1,0 +1,71 @@
+body {
+  margin: 0;
+  font-family: OpenSans, sans-serif;
+  font-size: 14px;
+}
+
+p {
+  margin: 0;
+  margin-bottom: 10px;
+}
+
+.point-cell {
+  fill: none;
+  pointer-events: all;
+  stroke: #000;
+  stroke-opacity: .2;
+}
+
+.point-cell:hover, .point-cell.selected {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .6;
+  stroke-width: 2px;
+}
+
+.point-cell.selected {
+  stroke-opacity: 1;
+  stroke-width: 3px;
+}
+
+.point-cell.malfunction {
+  fill: #ff0000;
+  opacity: 0.3;
+}
+
+.point circle {
+  pointer-events: none;
+}
+
+#map {
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:100%;
+}
+
+#selected,
+#selections,
+#loading:after,
+#about {
+  position:absolute;
+  background-color: #FFF;
+  opacity: 0.8;
+  border-radius: 2px;
+  padding: 10px 10px 0 10px;
+}
+#selected {
+  bottom: 10px;
+  left: 10px;
+  height: 28px;
+}
+
+#selected h1 {
+  font-size: 20px;
+  margin: 0px;
+  line-height: 20px;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
