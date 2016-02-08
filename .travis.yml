@@ -26,10 +26,7 @@ before_script:
 script:
     # Android
     - pushd Dispotrains
-    - gradlew build connectedCheck
+    - ./gradlew build connectedCheck
     - popd
     # Go
-    - pushd dispotrains.webapp
-    - go get ./...
-    - go build -v ./...
-    - popd
+    - ./build.go.sh
