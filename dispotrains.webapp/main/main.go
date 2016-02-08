@@ -3,8 +3,8 @@ package main
 import (
 	"strings"
 
-	"github.com/emembrives/tinkerings/dispotrains.webapp/client"
-	"github.com/emembrives/tinkerings/dispotrains.webapp/storage"
+	"github.com/emembrives/dispotrains/dispotrains.webapp/client"
+	"github.com/emembrives/dispotrains/dispotrains.webapp/storage"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
