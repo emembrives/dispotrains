@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/emembrives/tinkerings/dispotrains.webapp/storage"
+	"github.com/emembrives/dispotrains/dispotrains.webapp/storage"
 )
 
 type csvStation struct {

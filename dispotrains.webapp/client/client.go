@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/emembrives/tinkerings/dispotrains.webapp/storage"
+	"github.com/emembrives/dispotrains/dispotrains.webapp/storage"
 	"golang.org/x/net/html"
 )
 
