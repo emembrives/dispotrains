@@ -24,5 +24,12 @@ before_script:
     - gimme 1.5
 
 script:
-    - Dispotrains/gradlew build connectedCheck
-    - go build -v ./dispotrains.webapp/...
+    # Android
+    - pushd Dispotrains
+    - gradlew build connectedCheck
+    - popd
+    # Go
+    - pushd dispotrains.webapp
+    - go get ./...
+    - go build -v ./...
+    - popd
