@@ -16,7 +16,7 @@
                 <h2 class="ok">Données agregées</h2>
                 <dl>
                     <dt>Pannes/Relevés</dt><dd>{{.Stats.Malfunctions}}/{{.Stats.Reports}}</dd>
-                    <dt>Jours de panne/Jours relevés</dt><dd>{{.Stats.MalfunctionDays}}/{{.Stats.ReportDays}}</dd>
+                    <dt>Jours de panne/Jours relevés/Jours totaux</dt><dd>{{.Stats.MalfunctionDays}}/{{.Stats.ReportDays}}/{{.Stats.DisplayDays}}</dd>
                     <dt>Taux de fonctionnement</dt><dd>{{.Stats.PercentFunction | printf "%.1f"}}%</dd>
                 </dl>
             </paper-material>

@@ -52,7 +52,12 @@ func main() {
 	}
 }
 
-type events struct {
+// Events compile events for a station.
+type Events struct {
+	eventsByElevator map[string][]string
+	reportDays       []string
+	firstDay         time.Time
+	lastDay          time.Time
 }
 
 func statsHandler(station storage.Station, cStatuses *mgo.Collection) storage.StationStats {
@@ -66,16 +71,19 @@ func statsHandler(station storage.Station, cStatuses *mgo.Collection) storage.St
 		Sort("lastupdate").
 		All(&dbStatuses)
 
-	events, reports := statusesToEvents(dbStatuses)
-	stats := statusesToStatistics(events, reports, dbStatuses)
+	events := statusesToEvents(dbStatuses)
+	stats := statusesToStatistics(events)
 	stats.Name = station.Name
 	return stats
 }
 
-func statusesToEvents(dbStatuses []dataStatus) (map[string][]string, []string) {
+func statusesToEvents(dbStatuses []dataStatus) Events {
 	events := make(map[string][]string)
 	reportSet := make(map[string]bool)
-	var firstStatus, lastStatus time.Time = dbStatuses[0].Lastupdate, dbStatuses[0].Lastupdate
+	var firstStatus, lastStatus time.Time
+	if len(dbStatuses) != 0 {
+		firstStatus, lastStatus = dbStatuses[0].Lastupdate, dbStatuses[0].Lastupdate
+	}
 	for _, status := range dbStatuses {
 		if status.State == "Information non disponible" {
 			continue
@@ -98,20 +106,23 @@ func statusesToEvents(dbStatuses []dataStatus) (map[string][]string, []string) {
 		reports = append(reports, key)
 	}
 	reports.Sort()
-	return events, reports
+	return Events{events, reports, firstStatus, lastStatus}
 }
 
-func statusesToStatistics(events map[string][]string, reports []string, dbStatuses []dataStatus) storage.StationStats {
+func statusesToStatistics(events Events) storage.StationStats {
 	stats := storage.StationStats{}
-	stats.Reports = len(reports)
+	stats.Reports = len(events.reportDays)
+	// This is probably not correct due to daylight saving changes.
+	stats.DisplayDays = int(events.lastDay.Truncate(24*time.Hour).Sub(
+		events.firstDay.Truncate(24*time.Hour)).Hours() / 24)
 	reportDays := make(map[string]bool)
-	for _, date := range reports {
+	for _, date := range events.reportDays {
 		reportDays[date[0:10]] = true
 	}
 	stats.ReportDays = len(reportDays)
 	stats.Elevators = make(map[string]storage.ElevatorStats)
 	malfunctionDays := make(map[string]bool)
-	for elevatorName, statusDates := range events {
+	for elevatorName, statusDates := range events.eventsByElevator {
 		elevatorStats := storage.ElevatorStats{
 			Name:         elevatorName,
 			Malfunctions: len(statusDates),
