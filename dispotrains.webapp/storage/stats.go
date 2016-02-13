@@ -8,6 +8,7 @@ type StationStats struct {
 	Malfunctions    int
 	MalfunctionDays int
 	FunctionDays    int
+	DisplayDays     int
 	PercentFunction float64
 	Elevators       map[string]ElevatorStats
 }
