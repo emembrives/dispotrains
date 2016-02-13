@@ -52,6 +52,9 @@ func main() {
 	}
 }
 
+type events struct {
+}
+
 func statsHandler(station storage.Station, cStatuses *mgo.Collection) storage.StationStats {
 	var elevatorIds []string
 	for _, stationElevator := range station.Elevators {
@@ -72,7 +75,14 @@ func statsHandler(station storage.Station, cStatuses *mgo.Collection) storage.St
 func statusesToEvents(dbStatuses []dataStatus) (map[string][]string, []string) {
 	events := make(map[string][]string)
 	reportSet := make(map[string]bool)
+	var firstStatus, lastStatus time.Time = dbStatuses[0].Lastupdate, dbStatuses[0].Lastupdate
 	for _, status := range dbStatuses {
+		if status.State == "Information non disponible" {
+			continue
+		}
+		if lastStatus.Before(status.Lastupdate) {
+			lastStatus = status.Lastupdate
+		}
 		dateStr := status.Lastupdate.Format(time.RFC3339)
 		reportSet[dateStr] = true
 		if _, ok := events[status.Elevator]; !ok {
