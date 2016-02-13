@@ -7,6 +7,7 @@ import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 
 import com.google.common.base.Predicate;
@@ -99,6 +100,8 @@ public class StationNotificationManager {
         mBuilder.setOngoing(ongoing);
 
         Intent resultIntent = new Intent(mContext, StationDetailActivity.class);
+        resultIntent.setData(Uri.parse(String.format("dispotrains://station/%s", station.getName
+                ())));
         resultIntent.putExtra("station", station.getName());
         Line firstLine = station.getLines().iterator().next();
         resultIntent.putExtra("line", firstLine);
