@@ -87,12 +87,14 @@ func main() {
 	// Optional. Switch the session to a monotonic behavior
 	// session.SetMode(mgo.Monotonic, true)
 
+	// Retrieve lines from STIF website.
 	c := session.DB("dispotrains").C("stations")
 	lines, err := client.GetAllLines()
-
 	if err != nil {
 		panic(err)
 	}
+
+	// Build the station database collection.
 	stations := make(map[string]*storage.Station)
 	for _, line := range lines {
 		for _, station := range line.GetStations() {
@@ -106,20 +108,30 @@ func main() {
 		}
 	}
 	AddPositionToStations(stations)
-
-	c.RemoveAll(bson.M{})
+	stationIndex := mgo.Index{
+		Key:        []string{"name"},
+		Unique:     true,
+		Background: true,
+	}
+	err = c.EnsureIndex(stationIndex)
+	if err != nil {
+		panic(err)
+	}
 	for _, station := range stations {
 		err = c.Insert(&station)
 		if err != nil {
 			panic(err)
 		}
 	}
+
+	// Build the lines database collection.
 	job := &mgo.MapReduce{Map: mapStationsToLines, Reduce: reduceLines, Out: bson.M{"replace": "lines"}}
 	_, err = c.Find(nil).MapReduce(job, nil)
 	if err != nil {
 		panic(err)
 	}
 
+	// Append the new statuses to the database log.
 	c = session.DB("dispotrains").C("statuses")
 	index := mgo.Index{
 		Key:        []string{"state", "lastupdate", "elevator"},
@@ -146,15 +158,3 @@ func main() {
 		}
 	}
 }
-
-/*
-		for _, station := range line.GetStations() {
-			if !station.HasElevators {
-				continue
-			}
-			for _, elevator := range station.GetElevators() {
-				status := elevator.GetLastStatus()
-			}
-		}
-	}
-}*/
