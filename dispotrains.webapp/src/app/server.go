@@ -8,7 +8,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/emembrives/dispotrains/dispotrains.webapp/storage"
+	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
 
 	"github.com/eknkc/dateformat"
 	"github.com/gorilla/mux"

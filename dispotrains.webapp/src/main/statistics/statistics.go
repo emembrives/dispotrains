@@ -4,7 +4,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/emembrives/dispotrains/dispotrains.webapp/storage"
+	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
