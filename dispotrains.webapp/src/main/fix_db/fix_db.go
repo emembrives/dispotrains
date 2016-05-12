@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	session, err := mgo.Dial("localhost")
+	session, err := mgo.Dial("db")
 	if err != nil {
 		panic(err)
 	}
@@ -27,10 +27,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	_, err = c.RemoveAll(bson.M{"elevator": nil})
 	if err != nil {
 		panic(err)
 	}
 }
-

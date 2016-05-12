@@ -1,9 +1,0 @@
-## Dispotrains
-### Scraper
-6,15,30,45 8 * * * /dispotrains/build/scraper
-54 * * * * /dispotrains/build/scraper
-24 * * * * /dispotrains/build/scraper
-43 4 * * * /dispotrains/dump.sh
-
-### Server
-*/10 * * * * /dispotrains/dispotrains-server-run.sh

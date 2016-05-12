@@ -70,7 +70,7 @@ func (ls LineSlice) Lines() []Line {
 
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Cache-control", "public, max-age=86400")
-	session, err := mgo.Dial("localhost")
+	session, err := mgo.Dial("db")
 	if err != nil {
 		panic(err)
 	}
@@ -273,5 +273,5 @@ func main() {
 	r.HandleFunc("/app/AllStats/", VoronoiHandler)
 	r.PathPrefix("/static/").Handler(CacheRequest(http.StripPrefix("/static/", http.FileServer(http.Dir("static")))))
 	http.Handle("/", r)
-	log.Fatal(http.ListenAndServe(":9000", nil))
+	log.Fatal(http.ListenAndServe("0.0.0.0:9000", nil))
 }

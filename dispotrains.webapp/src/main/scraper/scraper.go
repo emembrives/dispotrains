@@ -78,7 +78,7 @@ const reduceLines string = `function(keySKU, lines) {
 }`
 
 func main() {
-	session, err := mgo.Dial("localhost")
+	session, err := mgo.Dial("db")
 	if err != nil {
 		panic(err)
 	}
