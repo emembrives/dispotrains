@@ -1,16 +1,23 @@
 all: app scraper statistics
 
-app: _deps
+app: _go_deps _js_deps _ln_deps
 	go build -o ../build/server ./app/*.go
-	ln -s ../src/app/templates ../build/
-	ln -s ../src/app/static ../build/
+
+_js_deps:
 	cd app/static/js && bower install --allow-root
 
-scraper: _deps
+_ln_deps:
+	mkdir -p ../build/
+	ln -s ../src/app/templates ../build/
+	ln -s ../src/app/static ../build/
+	ln -s ../src/scripts/db_dump.sh ../build/
+	ln -s ../src/analysis/stations-coordinates.csv ../build/
+
+scraper: _go_deps
 	go build -o ../build/scraper ./main/scraper/*.go
 
-statistics: _deps
+statistics: _go_deps
 	go build -o ../build/statistics ./main/statistics/*.go
 
-_deps:
+_go_deps:
 	go get ./...

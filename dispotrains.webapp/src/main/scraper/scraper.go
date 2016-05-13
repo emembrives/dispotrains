@@ -110,15 +110,16 @@ func main() {
 	AddPositionToStations(stations)
 	stationIndex := mgo.Index{
 		Key:        []string{"name"},
-		Unique:     true,
 		Background: true,
+		DropDups:   true,
+		Unique:     true,
 	}
 	err = c.EnsureIndex(stationIndex)
 	if err != nil {
 		panic(err)
 	}
 	for _, station := range stations {
-		err = c.Insert(&station)
+		_, err = c.Upsert(bson.M{"name": station.Name}, &station)
 		if err != nil {
 			panic(err)
 		}
@@ -135,10 +136,10 @@ func main() {
 	c = session.DB("dispotrains").C("statuses")
 	index := mgo.Index{
 		Key:        []string{"state", "lastupdate", "elevator"},
-		Unique:     true,
-		DropDups:   true,
 		Background: true,
+		DropDups:   true,
 		Sparse:     true,
+		Unique:     true,
 	}
 	err = c.EnsureIndex(index)
 	if err != nil {

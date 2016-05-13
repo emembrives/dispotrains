@@ -16,7 +16,7 @@ RUN chmod 644 /etc/crontab
 
 COPY src /go/src/github.com/emembrives/dispotrains/dispotrains.webapp/src
 WORKDIR /go/src/github.com/emembrives/dispotrains/dispotrains.webapp/src/
-RUN make
+RUN make -j 4
 RUN ln -s /go/src/github.com/emembrives/dispotrains/dispotrains.webapp/ /dispotrains
 
 EXPOSE 9000

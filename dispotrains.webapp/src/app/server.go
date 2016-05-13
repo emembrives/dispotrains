@@ -16,6 +16,10 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+const (
+	mongoDbHost = "db"
+)
+
 var (
 	homeTmpl         = template.Must(template.ParseFiles("templates/lines.html", "templates/footer.html", "templates/header.html"))
 	lineTmpl         = template.Must(template.ParseFiles("templates/line.html", "templates/footer.html", "templates/header.html"))
@@ -70,7 +74,7 @@ func (ls LineSlice) Lines() []Line {
 
 func HomeHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Cache-control", "public, max-age=86400")
-	session, err := mgo.Dial("db")
+	session, err := mgo.Dial(mongoDbHost)
 	if err != nil {
 		panic(err)
 	}
@@ -82,7 +86,7 @@ func HomeHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func LineHandler(w http.ResponseWriter, req *http.Request) {
-	session, err := mgo.Dial("localhost")
+	session, err := mgo.Dial(mongoDbHost)
 	if err != nil {
 		panic(err)
 	}
@@ -101,7 +105,7 @@ func LineHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func StationHandler(w http.ResponseWriter, req *http.Request) {
-	session, err := mgo.Dial("localhost")
+	session, err := mgo.Dial(mongoDbHost)
 	if err != nil {
 		panic(err)
 	}
@@ -125,7 +129,7 @@ func StationHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func StatsHandler(w http.ResponseWriter, req *http.Request) {
-	session, err := mgo.Dial("localhost")
+	session, err := mgo.Dial(mongoDbHost)
 	if err != nil {
 		panic(err)
 	}
@@ -212,7 +216,7 @@ func VoronoiHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
-	session, err := mgo.Dial("localhost")
+	session, err := mgo.Dial(mongoDbHost)
 	if err != nil {
 		panic(err)
 	}
@@ -238,7 +242,7 @@ func AppHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
-	session, err := mgo.Dial("localhost")
+	session, err := mgo.Dial(mongoDbHost)
 	if err != nil {
 		panic(err)
 	}

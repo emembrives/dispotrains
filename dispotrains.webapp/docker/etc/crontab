@@ -3,8 +3,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
 ## Dispotrains
 ### Scraper
-2,15,32,47 8 * * * root /dispotrains/build/scraper
-7 * * * *          root /dispotrains/build/scraper
-37 * * * *         root /dispotrains/build/scraper
+2,15,32,47 8 * * * root cd /dispotrains/build && /dispotrains/build/scraper
+7 * * * *          root cd /dispotrains/build && /dispotrains/build/scraper
+37 * * * *         root cd /dispotrains/build && /dispotrains/build/scraper
 43 4 * * *         root /dispotrains/build/db_dump.sh
 43 4 * * *         root /dispotrains/build/statistics
