@@ -3,9 +3,7 @@ services:
   db:
     image: mongo
     volumes:
-      - ./docker/mongo:/var/lib/mongodb
-    ports:
-      - "27017:27017"
+      - /var/lib/mongodb:/data/db
   dispotrains:
     build: .
     command: /usr/bin/supervisord
