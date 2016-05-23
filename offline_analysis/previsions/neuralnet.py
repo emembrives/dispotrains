@@ -1,7 +1,7 @@
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Lambda, Merge, Flatten
 from keras.layers import Embedding
-from keras.layers import Convolution1D, MaxPooling1D
+from keras.layers import LSTM, Convolution1D, MaxPooling1D
 from keras import backend as K
 import numpy
 
@@ -10,15 +10,16 @@ import csv
 INPUT_LENGTH = 29
 
 V1_HIDDEN_SIZE = 4
+LSTM_SIZE=32
 EMBEDDING_SIZE = 256
-NB_CONV_FILTER1 = 64
+NB_CONV_FILTER1 = 128
 FILTER_LENGTH = 3
 HIDDEN_DIMS = 64
 
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 NB_EPOCH = 5
-#LOSS_FUNCTION = 'binary_crossentropy'
-LOSS_FUNCTION = 'mean_squared_error'
+LOSS_FUNCTION = 'binary_crossentropy'
+#LOSS_FUNCTION = 'mean_squared_error'
 
 def load_data(filename, repair_only=False):
   values1 = []
@@ -44,23 +45,30 @@ V1_test, V2_test, L_test = load_data('data/shuffled-ai.csv', repair_only=True)
 
 model1 = Sequential()
 model1.add(Dense(V1_HIDDEN_SIZE, input_dim=4))
+model1.add(Dropout(0.2))
+model1.add(Dense(V1_HIDDEN_SIZE, activation='relu'))
+model1.add(Dropout(0.2))
 
 model2 = Sequential()
 
+model2.add(LSTM(LSTM_SIZE,
+                input_dim=1,
+                input_length=INPUT_LENGTH,
+))
+
 # we add a Convolution1D, which will learn nb_filter
 # word group filters of size filter_length:
-model2.add(Convolution1D(nb_filter=NB_CONV_FILTER1,
-                         filter_length=FILTER_LENGTH,
-                         input_dim=1,
-                         input_length=INPUT_LENGTH,
-                         border_mode='valid',
-                         activation='relu'))
+#model2.add(Convolution1D(nb_filter=NB_CONV_FILTER1,
+#                         filter_length=FILTER_LENGTH,
+#                         border_mode='valid',#
+#                         activation='relu'))
+#model2.add(Dropout(0.2))
+#model2.add(MaxPooling1D(pool_length=2))
+#model2.add(Dropout(0.2))
 
-model2.add(MaxPooling1D(pool_length=2))
-model2.add(Dropout(0.2))
-
-model2.add(Flatten())
+#model2.add(Flatten())
 model2.add(Dense(HIDDEN_DIMS, activation='relu'))
+model2.add(Dropout(0.2))
 
 model = Sequential()
 model.add(Merge([model1, model2], mode='concat'))

@@ -2,7 +2,7 @@ import json
 import datetime
 import csv
 
-f = open("../../data/statuses.json")
+f = open("data/statuses.json")
 
 UNKNOWN_STATE = "Information non disponible"
 AVAILABLE_STATE = "Disponible"
