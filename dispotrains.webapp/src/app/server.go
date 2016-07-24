@@ -237,7 +237,26 @@ func VoronoiHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func AppHandler(w http.ResponseWriter, req *http.Request) {
+func GetLinesHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Methods", "GET")
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Set("Cache-control", "public, max-age=86400")
+
+	session, err := mgo.Dial(mongoDbHost)
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+	c := session.DB("dispotrains").C("lines")
+	var lines = make(LineSlice, 0)
+	if err = c.Find(nil).Sort("value.network", "value.id").All(&lines); err != nil {
+		log.Println(err)
+	}
+	json.NewEncoder(w).Encode(&lines)
+}
+
+func GetStationsHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
@@ -248,11 +267,11 @@ func AppHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	defer session.Close()
 	c := session.DB("dispotrains").C("stations")
-	var stations []bson.M = make([]bson.M, 0)
+	var stations []bson.M
 	if err := c.Find(nil).All(&stations); err != nil {
 		log.Println(err)
 	}
-	jsonStations := make([]bson.M, 0)
+	var jsonStations []bson.M
 	for _, station := range stations {
 		delete(station, "_id")
 		jsonStations = append(jsonStations, station)
@@ -273,7 +292,8 @@ func main() {
 	r.HandleFunc("/ligne/{line}", LineHandler)
 	r.HandleFunc("/gare/{station}", StationHandler)
 	r.HandleFunc("/gare/{station}/stats", StatsHandler)
-	r.HandleFunc("/app/GetStations/", AppHandler)
+	r.HandleFunc("/app/GetLines/", GetLinesHandler)
+	r.HandleFunc("/app/GetStations/", GetStationsHandler)
 	r.HandleFunc("/app/AllStats/", VoronoiHandler)
 	r.PathPrefix("/static/").Handler(CacheRequest(http.StripPrefix("/static/", http.FileServer(http.Dir("static")))))
 	http.Handle("/", r)
