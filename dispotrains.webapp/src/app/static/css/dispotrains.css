@@ -5,6 +5,7 @@ html body .ui-btn.ui-btn-b.ui-custom-alert, html body .ui-body-b.ui-custom-alert
 body {
     font-family: Roboto, Noto, sans-serif;
     color: #212121;
+    margin: 0px;
 }
 
 h1 {

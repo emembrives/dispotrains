@@ -25,6 +25,7 @@ var (
 	lineTmpl         = template.Must(template.ParseFiles("templates/line.html", "templates/footer.html", "templates/header.html"))
 	stationTmpl      = template.Must(template.ParseFiles("templates/station.html", "templates/footer.html", "templates/header.html"))
 	stationStatsTmpl = template.Must(template.ParseFiles("templates/stats.html", "templates/footer.html", "templates/header.html"))
+	session = createSessionOrDie()
 )
 
 type Line struct {
@@ -72,13 +73,17 @@ func (ls LineSlice) Lines() []Line {
 	return r
 }
 
-func HomeHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Cache-control", "public, max-age=86400")
+func createSessionOrDie() *mgo.Session {
 	session, err := mgo.Dial(mongoDbHost)
 	if err != nil {
 		panic(err)
 	}
-	defer session.Close()
+	return session
+}
+
+func HomeHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Cache-control", "public, max-age=86400")
+
 	c := session.DB("dispotrains").C("lines")
 	var lines LineSlice = make(LineSlice, 0)
 	c.Find(nil).Sort("value.network", "value.id").All(&lines)
@@ -86,11 +91,6 @@ func HomeHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func LineHandler(w http.ResponseWriter, req *http.Request) {
-	session, err := mgo.Dial(mongoDbHost)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
 	c := session.DB("dispotrains").C("lines")
 
 	vars := mux.Vars(req)
@@ -99,17 +99,12 @@ func LineHandler(w http.ResponseWriter, req *http.Request) {
 	var line LineHolder
 	c.Find(bson.M{"_id": lineId}).One(&line)
 	w.Header().Set("Last-Modified", line.Value.LastUpdate.UTC().Format(time.RFC1123))
-	if err = lineTmpl.Execute(w, line.Value); err != nil {
+	if err := lineTmpl.Execute(w, line.Value); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func StationHandler(w http.ResponseWriter, req *http.Request) {
-	session, err := mgo.Dial(mongoDbHost)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
 	c := session.DB("dispotrains").C("stations")
 
 	vars := mux.Vars(req)
@@ -123,17 +118,12 @@ func StationHandler(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 	w.Header().Set("Last-Modified", station.LastUpdate.UTC().Format(time.RFC1123))
-	if err = stationTmpl.Execute(w, station); err != nil {
+	if err := stationTmpl.Execute(w, station); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func StatsHandler(w http.ResponseWriter, req *http.Request) {
-	session, err := mgo.Dial(mongoDbHost)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
 	cStations := session.DB("dispotrains").C("stations")
 	cStatuses := session.DB("dispotrains").C("statuses")
 	cStatistics := session.DB("dispotrains").C("statistics")
@@ -152,7 +142,7 @@ func StatsHandler(w http.ResponseWriter, req *http.Request) {
 	index := mgo.Index{
 		Key: []string{"elevator"},
 	}
-	err = cStatuses.EnsureIndex(index)
+	err := cStatuses.EnsureIndex(index)
 	if err != nil {
 		panic(err)
 	}
@@ -216,11 +206,6 @@ func VoronoiHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
-	session, err := mgo.Dial(mongoDbHost)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
 	cStatistics := session.DB("dispotrains").C("statistics")
 
 	var stats []bson.M = make([]bson.M, 0)
@@ -232,7 +217,7 @@ func VoronoiHandler(w http.ResponseWriter, req *http.Request) {
 		delete(stat, "_id")
 		jsonData = append(jsonData, stat)
 	}
-	if err = json.NewEncoder(w).Encode(&jsonData); err != nil {
+	if err := json.NewEncoder(w).Encode(&jsonData); err != nil {
 		log.Println(err)
 	}
 }
@@ -243,14 +228,9 @@ func GetLinesHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Cache-control", "public, max-age=86400")
 
-	session, err := mgo.Dial(mongoDbHost)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
 	c := session.DB("dispotrains").C("lines")
 	var lines = make(LineSlice, 0)
-	if err = c.Find(nil).Sort("value.network", "value.id").All(&lines); err != nil {
+	if err := c.Find(nil).Sort("value.network", "value.id").All(&lines); err != nil {
 		log.Println(err)
 	}
 	json.NewEncoder(w).Encode(&lines)
@@ -261,11 +241,6 @@ func GetStationsHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
-	session, err := mgo.Dial(mongoDbHost)
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
 	c := session.DB("dispotrains").C("stations")
 	var stations []bson.M
 	if err := c.Find(nil).All(&stations); err != nil {
@@ -287,6 +262,7 @@ func CacheRequest(h http.Handler) http.Handler {
 }
 
 func main() {
+	defer session.Close()
 	r := mux.NewRouter()
 	r.HandleFunc("/", HomeHandler)
 	r.HandleFunc("/ligne/{line}", LineHandler)
