@@ -2,6 +2,7 @@ package main
 
 import (
 	"strings"
+	"time"
 
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/client"
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
@@ -78,7 +79,7 @@ const reduceLines string = `function(keySKU, lines) {
 }`
 
 func main() {
-	session, err := mgo.Dial("db")
+	session, err := mgo.DialWithTimeout("db", time.Minute)
 	if err != nil {
 		panic(err)
 	}
