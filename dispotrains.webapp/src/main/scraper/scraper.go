@@ -20,23 +20,24 @@ const mapStationsToLines string = `function() {
     for (var i = 0; i < this.elevators.length; i++) {
         var elevator = this.elevators[i];
         var status = elevator.status;
-        if (this["update"] != null && status.lastupdate > this["update"]) {
-            this["update"] = status.lastupdate;
-        } else {
+        if (this["update"] == null || status.lastupdate > this["update"]) {
             this["update"] = status.lastupdate;
         }
         if (status.state == "Disponible") {
             continue;
         } else {
             this["status"] = false;
-            break;
         }
     }
     delete this["elevators"];
 
+	if (lines.length == 0) {
+		throw "No lines for station " + this;
+	}
+
     for (var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        delete line["_id"];
+		var key = {"network": lines[i].network, "id": lines[i].id};
+        var line = {"network": lines[i].network, "id": lines[i].id};
         line.update = this.update;
         line.goodStations = [];
         line.badStations = [];
@@ -45,25 +46,27 @@ const mapStationsToLines string = `function() {
         } else {
             line.badStations = [this];
         }
-        emit(line.id, line);
+        emit(key, line);
     }
 }`
 
-const reduceLines string = `function(keySKU, lines) {
-    var line = lines[0];
-    for (var idx = 1; idx < lines.length; idx++) {
-        if (lines[idx].badStations.length > 0) {
-            line.badStations.push(lines[idx].badStations[0]);
-            if (line.update < lines[idx].badStations[0].update) {
-                line.update = lines[idx].badStations[0].update;
-            }
-        }
-        if (lines[idx].goodStations.length > 0) {
-            line.goodStations.push(lines[idx].goodStations[0]);
-            if (line.update < lines[idx].goodStations[0].update) {
-                line.update = lines[idx].goodStations[0].update;
-            }
-        }
+const reduceLines string = `function(key, lines) {
+	var line = {"network": key.network, key: key.id};
+	line["update"] = null;
+	line.goodStations = [];
+	line.badStations = [];
+    for (var idx = 0; idx < lines.length; idx++) {
+		var currentLine = lines[idx];
+		for (let station of currentLine.badStations) {
+            line.badStations.push(station);
+		}
+		for (let station of currentLine.goodStations) {
+            line.goodStations.push(station);
+		}
+
+		if (line["update"] == null || line.update < lines[idx].update) {
+			line.update = lines[idx].update;
+		}
     }
     var sortFunc = function(a, b) {
         if (a.displayname < b.displayname) {
@@ -86,7 +89,7 @@ func main() {
 	defer session.Close()
 
 	// Optional. Switch the session to a monotonic behavior
-	// session.SetMode(mgo.Monotonic, true)
+	session.SetMode(mgo.Monotonic, true)
 
 	// Retrieve lines from STIF website.
 	c := session.DB("dispotrains").C("stations")
@@ -127,8 +130,12 @@ func main() {
 	}
 
 	// Build the lines database collection.
-	job := &mgo.MapReduce{Map: mapStationsToLines, Reduce: reduceLines, Out: bson.M{"replace": "lines"}}
-	_, err = c.Find(nil).MapReduce(job, nil)
+	job := &mgo.MapReduce{
+		Map: mapStationsToLines,
+		Reduce: reduceLines,
+		Out: bson.M{"replace": "lines"},
+	}
+	_, err = c.Find(bson.M{}).MapReduce(job, nil)
 	if err != nil {
 		panic(err)
 	}
