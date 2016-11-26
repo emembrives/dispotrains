@@ -51,17 +51,17 @@ const mapStationsToLines string = `function() {
 }`
 
 const reduceLines string = `function(key, lines) {
-	var line = {"network": key.network, key: key.id};
+	var line = {"network": key.network, "id": key.id};
 	line["update"] = null;
 	line.goodStations = [];
 	line.badStations = [];
     for (var idx = 0; idx < lines.length; idx++) {
 		var currentLine = lines[idx];
-		for (let station of currentLine.badStations) {
-            line.badStations.push(station);
+		for (var i = 0; i < currentLine.badStations.length; i++) {
+			line.badStations.push(currentLine.badStations[i]);
 		}
-		for (let station of currentLine.goodStations) {
-            line.goodStations.push(station);
+		for (var i = 0; i < currentLine.goodStations.length; i++) {
+            line.goodStations.push(currentLine.goodStations[i]);
 		}
 
 		if (line["update"] == null || line.update < lines[idx].update) {

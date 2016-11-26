@@ -97,7 +97,7 @@ func LineHandler(w http.ResponseWriter, req *http.Request) {
 	lineId := vars["line"]
 
 	var line LineHolder
-	c.Find(bson.M{"_id": lineId}).One(&line)
+	c.Find(bson.M{"value.id": lineId}).One(&line)
 	w.Header().Set("Last-Modified", line.Value.LastUpdate.UTC().Format(time.RFC1123))
 	if err := lineTmpl.Execute(w, line.Value); err != nil {
 		log.Fatal(err)
