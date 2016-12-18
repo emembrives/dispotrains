@@ -1,0 +1,9 @@
+<h1>
+  {{title}}
+</h1>
+<ul>
+  <li *ngFor="let station of stations | async"
+         (click)="gotoDetail(station)" class="station-list-item" >
+      {{station.displayname}}
+  </li>
+</ul>
