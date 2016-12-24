@@ -1,9 +1,4 @@
 <h1>
-  {{title}}
+  Dispotrains
 </h1>
-<ul>
-  <li *ngFor="let station of stations | async"
-         (click)="gotoDetail(station)" class="station-list-item" >
-      <station-item [station]=station></station-item>
-  </li>
-</ul>
+<router-outlet></router-outlet>

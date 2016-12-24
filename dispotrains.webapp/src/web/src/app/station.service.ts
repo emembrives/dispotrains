@@ -13,9 +13,16 @@ export class StationService {
                     .catch(this.handleError);
   }
 
-  private extractData(res: Response) {
+  private extractData(res: Response): Station[] {
     let body = res.json();
-    return body || { };
+    if (!body) {
+      return new Array<Station>();
+    }
+    let stations: Station[] = new Array<Station>();
+    for (let stationData of body) {
+      stations.push(new Station(stationData));
+    }
+    return stations;
   }
 
   private handleError (error: Response | any) {

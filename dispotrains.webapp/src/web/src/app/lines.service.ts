@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 
 import { StationService } from './station.service';
@@ -6,21 +6,32 @@ import { Line, Station } from './station';
 
 @Injectable()
 export class LinesService {
-  constructor(private stationService: StationService) { }
+  constructor(@Inject(StationService) private stationService: StationService) {}
 
   getLines() : Observable<Line[]> {
     return this.stationService.getStations().map(this.stationToLines);
   }
 
   private stationToLines(stations: Station[]) : Line[] {
-    let lineSet: Set<Line>;
+    let lineMap: Map<string, Line> = new Map<string, Line>();
     for (let station of stations) {
         for (let line of station.lines) {
-          lineSet.add(line);
+          let lineName: string = line.GetName();
+          lineMap.set(lineName, line);
         }
     }
-    let lines: Line[];
-    lineSet.forEach(function(line: Line) { lines.push(line); });
+    let lines: Line[] = new Array<Line>();
+    lineMap.forEach(function(value: Line, key: string) { lines.push(value); });
+    lines.sort((a: Line, b: Line) => {
+      if (a.GetName() > b.GetName()) {
+        return 1;
+      }
+
+      if (a.GetName() < b.GetName()) {
+        return -1;
+      }
+      return 0;
+    });
     return lines;
   }
 
