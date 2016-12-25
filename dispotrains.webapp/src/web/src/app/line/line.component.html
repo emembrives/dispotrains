@@ -1,6 +1,7 @@
 <ul>
-  <li *ngFor="let station of stations | async"
-         (click)="gotoDetail(station)" class="station-list-item" >
+  <li *ngFor="let station of stations | async"  class="station-list-item" >
+    <a [routerLink]="['/gare', station.name]">
       <station-item [station]=station></station-item>
+    </a>
   </li>
 </ul>

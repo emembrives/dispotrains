@@ -1,18 +1,16 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { Observable }               from 'rxjs/Observable';
+
 import { Station } from '../station';
 
 @Component({
   selector: 'station-item',
   templateUrl: './station-item.component.html',
-  styleUrls: ['./station-item.component.css']
+  styleUrls: ['./station-item.component.css'],
 })
-export class StationItemComponent implements OnInit {
+export class StationItemComponent {
   @Input()
-  station: Station;
+  station: Observable<Station>;
 
-  constructor() { }
-
-  ngOnInit() {
-  }
-
+  constructor() {}
 }

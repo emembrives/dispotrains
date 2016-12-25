@@ -1,6 +1,5 @@
 <ul>
-  <li *ngFor="let line of lines | async"
-         (click)="gotoDetail(line)" class="line-list-item" >
+  <li *ngFor="let line of lines | async" class="line-list-item" >
       <a [routerLink]="['/ligne', line.id]">{{ line.network }} {{ line.id }}</a>
   </li>
 </ul>

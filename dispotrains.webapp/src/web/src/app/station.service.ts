@@ -3,14 +3,28 @@ import { Http, Response } from '@angular/http';
 import { Station }           from './station';
 import { Observable }     from 'rxjs/Observable';
 
+import { SorterUtils } from './sorting';
+
 @Injectable()
 export class StationService {
   private stationsUrl = 'http://dispotrains.membrives.fr/app/GetStations/';
+
   constructor (private http: Http) {}
-  getStations (): Observable<Station[]> {
+
+  getStations(): Observable<Station[]> {
     return this.http.get(this.stationsUrl)
                     .map(this.extractData)
                     .catch(this.handleError);
+  }
+
+  getStation(name: string): Observable<Station> {
+    return this.getStations().map((stations: Station[]) => {
+      for (let station of stations) {
+        if (station.name == name) {
+          return station;
+        }
+      }
+    });
   }
 
   private extractData(res: Response): Station[] {

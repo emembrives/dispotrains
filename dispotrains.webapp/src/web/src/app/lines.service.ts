@@ -1,12 +1,30 @@
 import { Injectable, Inject } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
+import { combineLatest } from 'rxjs/observable/combineLatest';
 
 import { StationService } from './station.service';
 import { Line, Station } from './station';
+import { SorterUtils } from './sorting';
 
 @Injectable()
 export class LinesService {
   constructor(@Inject(StationService) private stationService: StationService) {}
+
+  getLine(id: string): Observable<Line> {
+    return this.stationService.getStations()
+      .map(this.stationToLines)
+      .map(this.findLine(id));
+  }
+
+  private findLine(id: string): (lines: Line[]) => Line {
+    return function(lines: Line[]) {
+      for (let line of lines) {
+        if (line.id == id) {
+          return line;
+        }
+      }
+    };
+  }
 
   getLines() : Observable<Line[]> {
     return this.stationService.getStations().map(this.stationToLines);
@@ -22,32 +40,22 @@ export class LinesService {
     }
     let lines: Line[] = new Array<Line>();
     lineMap.forEach(function(value: Line, key: string) { lines.push(value); });
-    lines.sort((a: Line, b: Line) => {
-      if (a.GetName() > b.GetName()) {
-        return 1;
-      }
-
-      if (a.GetName() < b.GetName()) {
-        return -1;
-      }
-      return 0;
-    });
+    lines.sort(SorterUtils.sorterBySelector((line: Line) => line.GetName()));
     return lines;
   }
 
-  getStationsForLine(line: Line) : Observable<Station[]> {
-    return this.stationService.getStations().map(this.findStations(line));
+  getStationsForLine(line: Observable<Line>) : Observable<Station[]> {
+    return combineLatest(this.stationService.getStations(), line, this.findStations);
   }
 
-  private findStations(line: Line) : ((stations: Station[])=>Station[]) {
-    return function(stations: Station[]) : Station[] {
-      let selected: Station[];
-      for (let station of stations) {
-        if (station.lines.some((stationLine) => stationLine == line)) {
-          selected.push(station);
-        }
+  private findStations(stations: Station[], line: Line) : Station[] {
+    let selected: Station[] = new Array<Station>();
+    for (let station of stations) {
+      if (station.lines.some((stationLine) => stationLine.id == line.id)) {
+        selected.push(station);
       }
-      return selected;
     }
+    selected.sort(SorterUtils.sorterBySelector((station: Station) => station.displayname));
+    return selected;
   }
 }
