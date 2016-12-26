@@ -10,10 +10,10 @@ import { Line } from '../station';
 
 
 @Component({
-  selector: 'app-line-list',
+  selector: 'line-list',
   templateUrl: './line-list.component.html',
   styleUrls: ['./line-list.component.css'],
-  providers: [ LinesService, StationService ]
+  providers: [LinesService, StationService]
 })
 export class LineListComponent implements OnInit {
   lines: Observable<Line[]>;

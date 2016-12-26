@@ -8,10 +8,10 @@ import { StationStatsComponent } from './station-stats/station-stats.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/lignes', pathMatch: 'full' },
-  { path: 'lignes',    component: LineListComponent },
+  { path: 'lignes', component: LineListComponent },
   { path: 'ligne/:id', component: LineComponent },
-  { path: 'gare/:id',  component: StationComponent },
-  { path: 'gare/:id/stats',  component: StationStatsComponent },
+  { path: 'gare/:id', component: StationComponent },
+  { path: 'gare/:id/stats', component: StationStatsComponent },
 ];
 
 @NgModule({

@@ -11,10 +11,10 @@ import { StationService } from '../station.service';
 import { Station, Line } from '../station';
 
 @Component({
-  selector: 'app-line',
+  selector: 'line',
   templateUrl: './line.component.html',
   styleUrls: ['./line.component.css'],
-  providers: [ LinesService, StationService ]
+  providers: [LinesService, StationService]
 })
 export class LineComponent implements OnInit {
   line: Observable<Line>;
@@ -24,7 +24,7 @@ export class LineComponent implements OnInit {
     private linesService: LinesService,
     private route: ActivatedRoute,
     private location: Location
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.line = this.route.params

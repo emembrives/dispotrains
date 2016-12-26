@@ -1,15 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { Observable }       from 'rxjs/Observable';
+
+import { Elevator } from '../station';
 
 @Component({
-  selector: 'app-elevator-item',
+  selector: 'elevator-item',
   templateUrl: './elevator-item.component.html',
   styleUrls: ['./elevator-item.component.css']
 })
-export class ElevatorItemComponent implements OnInit {
+export class ElevatorItemComponent {
+  @Input()
+  elevator: Observable<Elevator>;
 
   constructor() { }
-
-  ngOnInit() {
-  }
-
 }
