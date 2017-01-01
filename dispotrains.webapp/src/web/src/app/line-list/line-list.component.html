@@ -1,5 +1,4 @@
-<ul>
-  <li *ngFor="let line of lines | async" class="line-list-item" >
-      <a [routerLink]="['/ligne', line.id]">{{ line.network }} {{ line.id }}</a>
-  </li>
-</ul>
+<titlebar [title]="'DispoTrains'"></titlebar>
+<md-nav-list>
+  <a md-list-item *ngFor="let line of lines | async" [routerLink]="['/ligne', line.id]">{{ line.network }} {{ line.id }}</a>
+</md-nav-list>

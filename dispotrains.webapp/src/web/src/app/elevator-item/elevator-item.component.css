@@ -1,0 +1,7 @@
+.autofill {
+  flex: 1 1 auto;
+}
+
+md-list-item div {
+  display: flex;
+}

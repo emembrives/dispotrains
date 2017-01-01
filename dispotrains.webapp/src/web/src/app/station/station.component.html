@@ -1,6 +1,4 @@
-<h2>{{ (station | async)?.displayname }}</h2>
-<ul>
-  <li *ngFor="let elevator of (station | async)?.elevators"  class="elevator-list-item" >
-    <elevator-item [elevator]=elevator></elevator-item>
-  </li>
-</ul>
+<titlebar [title]="(station | async)?.displayname + ' - Dispotrains'"></titlebar>
+<md-list>
+  <elevator-item *ngFor="let elevator of (station | async)?.elevators" [elevator]=elevator></elevator-item>
+</md-list>

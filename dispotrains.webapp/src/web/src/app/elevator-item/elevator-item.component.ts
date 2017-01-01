@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { Observable }       from 'rxjs/Observable';
 
 import { Elevator } from '../station';
 
@@ -10,7 +9,7 @@ import { Elevator } from '../station';
 })
 export class ElevatorItemComponent {
   @Input()
-  elevator: Observable<Elevator>;
+  elevator: Elevator;
 
   constructor() { }
 }

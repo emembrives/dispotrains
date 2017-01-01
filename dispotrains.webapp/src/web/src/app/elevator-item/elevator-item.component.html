@@ -1,3 +1,12 @@
-<p>
-  {{ elevator.situation }} {{ elevator.direction }}
-</p>
+<md-list-item>
+  <div md-line>
+    <span>{{ elevator.situation }}</span>
+    <span class="autofill"></span>
+    <span>{{ elevator.status.state}}</span>
+  </div>
+  <div md-line>
+    <span>{{ elevator.direction }}</span>
+    <span class="autofill"></span>
+    <span>{{ elevator.status.lastupdate }}</span>
+  </div>
+</md-list-item>

@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { AppRoutingModule } from './app-routing.module';
+import { MaterialModule } from '@angular/material';
 
 import { AppComponent } from './app.component';
 import { StationItemComponent } from './station-item/station-item.component';
@@ -11,6 +12,7 @@ import { LineComponent } from './line/line.component';
 import { StationComponent } from './station/station.component';
 import { StationStatsComponent } from './station-stats/station-stats.component';
 import { ElevatorItemComponent } from './elevator-item/elevator-item.component';
+import { TitlebarComponent } from './titlebar/titlebar.component';
 
 @NgModule({
   declarations: [
@@ -20,13 +22,15 @@ import { ElevatorItemComponent } from './elevator-item/elevator-item.component';
     LineComponent,
     StationComponent,
     StationStatsComponent,
-    ElevatorItemComponent
+    ElevatorItemComponent,
+    TitlebarComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpModule,
-    AppRoutingModule
+    AppRoutingModule,
+    MaterialModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]

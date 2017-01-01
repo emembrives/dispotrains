@@ -1,8 +1,6 @@
-<h2>{{ line.network }} {{ line.id }}</h2>
-<ul>
-  <li *ngFor="let station of stations | async"  class="station-list-item" >
-    <a [routerLink]="['/gare', station.name]">
-      <station-item [station]=station></station-item>
-    </a>
-  </li>
-</ul>
+<titlebar [title]="(line | async)?.GetName() + ' - Dispotrains'"></titlebar>
+<md-nav-list>
+  <a md-list-item *ngFor="let station of stations | async" [routerLink]="['/gare', station.name]">
+    <station-item [station]=station></station-item>
+  </a>
+</md-nav-list>
