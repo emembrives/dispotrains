@@ -72,4 +72,13 @@ export class Station {
       this.elevators.push(new Elevator(elevatorData));
     }
   }
+
+  available() : boolean {
+    for (let elevator of this.elevators) {
+      if (elevator.status.state != "Disponible") {
+        return false;
+      }
+    }
+    return true;
+  }
 }

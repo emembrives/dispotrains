@@ -16,7 +16,8 @@ import { Station, Line } from '../station';
 })
 export class LineComponent implements OnInit {
   line: Observable<Line>;
-  stations: Observable<Station[]>;
+  badStations: Observable<Station[]>;
+  goodStations: Observable<Station[]>;
 
   constructor(
     private linesService: LinesService,
@@ -27,7 +28,16 @@ export class LineComponent implements OnInit {
   ngOnInit() {
     this.line = this.route.params
       .switchMap((params: Params) => this.linesService.getLine(params['id']));
-    this.stations = this.linesService.getStationsForLine(this.line);
+    let stations = this.linesService.getStationsForLine(this.line);
+    this.goodStations = stations.map(this.findGoodStations);
+    this.badStations = stations.map(this.findBadStations);
   }
 
+  private findGoodStations(stations: Station[]) : Station[] {
+    return stations.filter((station: Station) => station.available());
+  }
+
+  private findBadStations(stations: Station[]) : Station[] {
+    return stations.filter((station: Station) => !station.available());
+  }
 }

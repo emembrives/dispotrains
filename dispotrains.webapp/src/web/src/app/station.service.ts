@@ -13,7 +13,6 @@ export class StationService {
   private stations : Observable<Station[]>;
 
   constructor(private http: Http) {
-    console.log("Creating a new StationService");
     this.stations = this.http.get(this.stationsUrl)
       .map(this.extractData)
       .catch(this.handleError)
