@@ -12,8 +12,7 @@ import { Station } from '../station';
 @Component({
   selector: 'station',
   templateUrl: './station.component.html',
-  styleUrls: ['./station.component.css'],
-  providers: [StationService]
+  styleUrls: ['./station.component.css']
 })
 export class StationComponent implements OnInit {
   station: Observable<Station>;

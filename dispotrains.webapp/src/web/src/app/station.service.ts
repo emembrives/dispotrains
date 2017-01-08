@@ -3,19 +3,26 @@ import { Http, Response } from '@angular/http';
 import { Station }           from './station';
 import { Observable }     from 'rxjs/Observable';
 import { combineLatest } from 'rxjs/observable/combineLatest';
+import  'rxjs/add/operator/publishLast';
 
 import { SorterUtils } from './sorting';
 
 @Injectable()
 export class StationService {
   private stationsUrl = 'http://dispotrains.membrives.fr/app/GetStations/';
+  private stations : Observable<Station[]>;
 
-  constructor(private http: Http) { }
+  constructor(private http: Http) {
+    console.log("Creating a new StationService");
+    this.stations = this.http.get(this.stationsUrl)
+      .map(this.extractData)
+      .catch(this.handleError)
+      .publishLast()
+      .refCount();
+  }
 
   getStations(): Observable<Station[]> {
-    return this.http.get(this.stationsUrl)
-      .map(this.extractData)
-      .catch(this.handleError);
+    return this.stations;
   }
 
   getStation(nameObservable: Observable<string>): Observable<Station> {

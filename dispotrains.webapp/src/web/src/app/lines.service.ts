@@ -8,7 +8,7 @@ import { SorterUtils } from './sorting';
 
 @Injectable()
 export class LinesService {
-  constructor(@Inject(StationService) private stationService: StationService) {}
+  constructor(private stationService: StationService) {}
 
   getLine(id: string): Observable<Line> {
     return this.stationService.getStations()

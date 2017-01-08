@@ -13,7 +13,6 @@ import { Line } from '../station';
   selector: 'line-list',
   templateUrl: './line-list.component.html',
   styleUrls: ['./line-list.component.css'],
-  providers: [LinesService, StationService]
 })
 export class LineListComponent implements OnInit {
   lines: Observable<Line[]>;

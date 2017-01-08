@@ -14,6 +14,9 @@ import { StationStatsComponent } from './station-stats/station-stats.component';
 import { ElevatorItemComponent } from './elevator-item/elevator-item.component';
 import { TitlebarComponent } from './titlebar/titlebar.component';
 
+import { StationService } from './station.service';
+import { LinesService } from './lines.service';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -32,7 +35,7 @@ import { TitlebarComponent } from './titlebar/titlebar.component';
     AppRoutingModule,
     MaterialModule.forRoot()
   ],
-  providers: [],
+  providers: [StationService, LinesService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
