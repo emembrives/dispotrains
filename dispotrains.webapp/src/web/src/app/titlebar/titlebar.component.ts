@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { Location }         from '@angular/common';
 
 @Component({
   selector: 'titlebar',
@@ -8,6 +9,16 @@ import { Component, Input } from '@angular/core';
 export class TitlebarComponent {
   @Input()
   title: string;
+  @Input()
+  root: boolean;
 
-  constructor() { }
+  constructor(private location: Location) { }
+
+  goBack(): void {
+    this.location.back();
+  }
+
+  hasBack(): boolean {
+    return !this.root;
+  }
 }

@@ -27,7 +27,7 @@ export class Status {
   state: string;
 
   constructor(statusData: Object) {
-    this.lastupdate = statusData["lastUpdate"];
+    this.lastupdate = statusData["lastupdate"];
     this.state = statusData["state"];
   }
 }
@@ -43,6 +43,10 @@ export class Elevator {
     this.id = elevatorData["id"];
     this.situation = elevatorData["situation"];
     this.status = new Status(elevatorData["status"]);
+  }
+
+  available() : boolean {
+    return this.status.state == "Disponible"
   }
 }
 
@@ -75,7 +79,7 @@ export class Station {
 
   available() : boolean {
     for (let elevator of this.elevators) {
-      if (elevator.status.state != "Disponible") {
+      if (!elevator.available()) {
         return false;
       }
     }

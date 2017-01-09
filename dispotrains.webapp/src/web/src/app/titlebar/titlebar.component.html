@@ -1,5 +1,8 @@
 <md-toolbar color="primary" class="md-elevation-z6">
-  <span><h1>{{ title }}</h1></span>
+  <span>
+    <a *ngIf="hasBack()" color="primary" md-mini-fab  (click)="goBack()"><md-icon>arrow_back</md-icon></a>
+  </span>
+  <span class="title"><h1>{{ title }}</h1></span>
   <span id="autofill"></span>
   <span>
     <a color="primary" md-mini-fab  href="https://play.google.com/store/apps/details?id=fr.membrives.dispotrains"><md-icon>android</md-icon></a>

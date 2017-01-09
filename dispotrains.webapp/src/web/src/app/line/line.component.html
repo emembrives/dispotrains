@@ -1,4 +1,4 @@
-<titlebar [title]="(line | async)?.GetName() + ' - Dispotrains'"></titlebar>
+<titlebar [title]="(line | async)?.GetName() + ' - Dispotrains'" [root]="false"></titlebar>
 <md-nav-list>
   <h2 md-subheader>Avec dysfonctionnement(s)</h2>
   <a md-list-item *ngFor="let station of badStations | async" [routerLink]="['/gare', station.name]">

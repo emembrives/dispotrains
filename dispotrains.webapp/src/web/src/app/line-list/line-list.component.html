@@ -1,4 +1,4 @@
-<titlebar [title]="'DispoTrains'"></titlebar>
+<titlebar [title]="'DispoTrains'" [root]="true"></titlebar>
 <md-nav-list>
   <a md-list-item *ngFor="let line of lines | async" [routerLink]="['/ligne', line.id]">{{ line.network }} {{ line.id }}</a>
 </md-nav-list>

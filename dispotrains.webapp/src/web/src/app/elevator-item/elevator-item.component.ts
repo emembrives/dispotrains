@@ -12,4 +12,8 @@ export class ElevatorItemComponent {
   elevator: Elevator;
 
   constructor() { }
+
+  isBroken() : boolean {
+    return !this.elevator.available();
+  }
 }
