@@ -16,6 +16,7 @@ import { TitlebarComponent } from './titlebar/titlebar.component';
 
 import { StationService } from './station.service';
 import { LinesService } from './lines.service';
+import { PushService } from './push.service';
 
 @NgModule({
   declarations: [
@@ -35,7 +36,7 @@ import { LinesService } from './lines.service';
     AppRoutingModule,
     MaterialModule.forRoot()
   ],
-  providers: [StationService, LinesService],
+  providers: [StationService, LinesService, PushService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
