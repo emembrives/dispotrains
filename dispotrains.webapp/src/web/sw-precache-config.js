@@ -6,7 +6,7 @@ module.exports = {
       [ 'dist/index.html', 'dist/**.js', 'dist/**.css', 'dist/**.map' ],
   maximumFileSizeToCacheInBytes : 5242880,
   runtimeCaching : [ {
-    urlPattern : /^http:\/\/dispotrains\.membrives\.fr\/app/,
+    urlPattern : /^http:\/\/dispotrains\.membrives\.fr\/app\/Get/,
     handler : 'networkFirst'
   } ]
 };
