@@ -20,7 +20,10 @@ export class PushService {
       if (subscription) {
         return Promise.resolve(subscription);
       }
-      return registration.pushManager.subscribe({ userVisibleOnly: false })
+      return registration.pushManager.subscribe({
+        userVisibleOnly: false,
+        applicationServerKey: new Uint8Array([])
+      })
     }).then((subscription: PushSubscription) => {
       this.http.get(this.serverAPIBaseUrl + subscription.endpoint);
     }).catch(function(error) {
