@@ -5,6 +5,7 @@ import { HttpModule } from '@angular/http';
 import { AppRoutingModule } from './app-routing.module';
 import { MaterialModule } from '@angular/material';
 
+
 import { AppComponent } from './app.component';
 import { StationItemComponent } from './station-item/station-item.component';
 import { LineListComponent } from './line-list/line-list.component';
@@ -34,7 +35,7 @@ import { PushService } from './push.service';
     FormsModule,
     HttpModule,
     AppRoutingModule,
-    MaterialModule.forRoot()
+    MaterialModule,
   ],
   providers: [StationService, LinesService, PushService],
   bootstrap: [AppComponent]
