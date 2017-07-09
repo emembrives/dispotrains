@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	mongoDbHost = "db"
+	mongoDbHost = "localhost"
 )
 
 var (
@@ -25,7 +25,7 @@ var (
 	lineTmpl         = template.Must(template.ParseFiles("templates/line.html", "templates/footer.html", "templates/header.html"))
 	stationTmpl      = template.Must(template.ParseFiles("templates/station.html", "templates/footer.html", "templates/header.html"))
 	stationStatsTmpl = template.Must(template.ParseFiles("templates/stats.html", "templates/footer.html", "templates/header.html"))
-	session = createSessionOrDie()
+	session          = createSessionOrDie()
 )
 
 type Line struct {
@@ -271,6 +271,9 @@ func main() {
 	r.HandleFunc("/app/GetLines/", GetLinesHandler)
 	r.HandleFunc("/app/GetStations/", GetStationsHandler)
 	r.HandleFunc("/app/AllStats/", VoronoiHandler)
+	r.HandleFunc("/app/VAPID", VAPIDHandler)
+	r.HandleFunc("/app/PushSub", PushSubHandler)
+	r.HandleFunc("/app/PushToAll", PushToAllHandler)
 	r.PathPrefix("/static/").Handler(CacheRequest(http.StripPrefix("/static/", http.FileServer(http.Dir("static")))))
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe("0.0.0.0:9000", nil))
