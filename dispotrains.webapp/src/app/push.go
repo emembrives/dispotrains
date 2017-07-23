@@ -69,12 +69,20 @@ func PushSubHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
+	if req.Method != "POST" {
+		return
+	}
+
 	var data map[string]interface{}
 	err := json.NewDecoder(req.Body).Decode(&data)
 	if err != nil {
 		log.Println(err)
 	}
-	log.Printf("Push, endpoint: %v+", data)
+	c := session.DB("dispotrains").C("pushSubscribers")
+	_, err = c.Upsert(data, data)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func PushToAllHandler(w http.ResponseWriter, req *http.Request) {
