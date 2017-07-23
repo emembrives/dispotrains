@@ -1,7 +1,7 @@
 self.addEventListener('push', function(event) {
   var notificationOptions = {
     body: "Hello World",
-    icon: icon ? icon : 'public/icons/icon-default.png',
+    icon: 'assets/logo-64.png',
     data:{
       url : 'http://example.com/updates'
     }
