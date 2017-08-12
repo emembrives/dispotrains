@@ -64,6 +64,11 @@ func (k *VAPIDKey) ToElliptic() *ecdsa.PrivateKey {
 	}
 }
 
+type Registration struct {
+	Subscription map[string]interface{}
+	LastUpdated  time.Time
+}
+
 func PushSubHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
@@ -78,8 +83,13 @@ func PushSubHandler(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+	registration := Registration{
+		Subscription: data,
+		LastUpdated:  time.Now(),
+	}
+
 	c := session.DB("dispotrains").C("pushSubscribers")
-	_, err = c.Upsert(data, data)
+	_, err = c.Upsert(map[string]interface{}{"subscription": data}, registration)
 	if err != nil {
 		log.Println(err)
 	}
@@ -132,7 +142,6 @@ func VAPIDHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Cache-control", "public, max-age=86400")
 
 	keyPair := getOrCreateVAPIDKey()
-
 	json.NewEncoder(w).Encode(&keyPair)
 }
 
