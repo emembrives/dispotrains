@@ -1,13 +1,18 @@
 package main
 
 import (
+	"io/ioutil"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/client"
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/zabawaba99/firego.v1"
 )
 
 const mapStationsToLines string = `function() {
@@ -56,17 +61,17 @@ const reduceLines string = `function(key, lines) {
 	line.goodStations = [];
 	line.badStations = [];
     for (var idx = 0; idx < lines.length; idx++) {
-		var currentLine = lines[idx];
-		for (var i = 0; i < currentLine.badStations.length; i++) {
-			line.badStations.push(currentLine.badStations[i]);
-		}
-		for (var i = 0; i < currentLine.goodStations.length; i++) {
-            line.goodStations.push(currentLine.goodStations[i]);
-		}
+		  var currentLine = lines[idx];
+		  for (var i = 0; i < currentLine.badStations.length; i++) {
+		  	line.badStations.push(currentLine.badStations[i]);
+		  }
+		  for (var i = 0; i < currentLine.goodStations.length; i++) {
+              line.goodStations.push(currentLine.goodStations[i]);
+		  }
 
-		if (line["update"] == null || line.update < lines[idx].update) {
-			line.update = lines[idx].update;
-		}
+		  if (line["update"] == null || line.update < lines[idx].update) {
+		  	line.update = lines[idx].update;
+		  }
     }
     var sortFunc = function(a, b) {
         if (a.displayname < b.displayname) {
@@ -80,6 +85,33 @@ const reduceLines string = `function(key, lines) {
     line.goodStations.sort(sortFunc);
     return line;
 }`
+
+func uploadToFirebase(session *mgo.Session) error {
+	d, err := ioutil.ReadFile("/data/key/dispotrains.json")
+	if err != nil {
+		return err
+	}
+
+	conf, err := google.JWTConfigFromJSON(d, "https://www.googleapis.com/auth/userinfo.email",
+		"https://www.googleapis.com/auth/firebase.database")
+	if err != nil {
+		return err
+	}
+
+	fb := firego.New("https://dispotrains-bbaaa.firebaseio.com", conf.Client(oauth2.NoContext))
+
+	c := session.DB("dispotrains").C("stations")
+	var stations []bson.M
+	if err := c.Find(nil).All(&stations); err != nil {
+		log.Println(err)
+	}
+	var jsonStations []bson.M
+	for _, station := range stations {
+		delete(station, "_id")
+		jsonStations = append(jsonStations, station)
+	}
+	return fb.Set(jsonStations)
+}
 
 func main() {
 	session, err := mgo.DialWithTimeout("db", time.Minute)
@@ -131,9 +163,9 @@ func main() {
 
 	// Build the lines database collection.
 	job := &mgo.MapReduce{
-		Map: mapStationsToLines,
+		Map:    mapStationsToLines,
 		Reduce: reduceLines,
-		Out: bson.M{"replace": "lines"},
+		Out:    bson.M{"replace": "lines"},
 	}
 	_, err = c.Find(bson.M{}).MapReduce(job, nil)
 	if err != nil {
@@ -166,4 +198,5 @@ func main() {
 			}
 		}
 	}
+	uploadToFirebase(session)
 }
