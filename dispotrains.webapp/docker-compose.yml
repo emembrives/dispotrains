@@ -12,4 +12,5 @@ services:
     links:
       - db
     volumes:
-      - /home/web/dispotrains/key:/data/key
+      - /home/web/dispotrains/key:/dispotrains/key
+      - /home/web/dispotrains/data:/dispotrains/build/static/data

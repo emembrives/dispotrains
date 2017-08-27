@@ -87,7 +87,7 @@ const reduceLines string = `function(key, lines) {
 }`
 
 func uploadToFirebase(session *mgo.Session) error {
-	d, err := ioutil.ReadFile("/data/key/dispotrains.json")
+	d, err := ioutil.ReadFile("/dispotrains/key/dispotrains.json")
 	if err != nil {
 		return err
 	}
