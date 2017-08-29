@@ -6,10 +6,11 @@ import { combineLatest } from 'rxjs/observable/combineLatest';
 import 'rxjs/add/operator/publishLast';
 
 import { SorterUtils } from './sorting';
+import { environment } from '../environments/environment';
 
 @Injectable()
 export class StationService {
-  private stationsUrl = 'http://dispotrains.membrives.fr/app/GetStations/';
+  private stationsUrl = environment.baseUrl + '/app/GetStations/';
   private stations: Observable<Station[]>;
 
   constructor(private http: Http) {

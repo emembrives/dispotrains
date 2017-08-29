@@ -64,7 +64,9 @@ export class Station {
     this.displayname = stationData["displayname"];
     this.city = stationData["city"];
     this.osmid = stationData["osmid"];
-    this.position = new Position(stationData["position"]);
+    if (stationData["position"] !== undefined) {
+      this.position = new Position(stationData["position"]);
+    }
 
     this.lines = new Array<Line>();
     for (let lineData of stationData["lines"]) {

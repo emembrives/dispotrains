@@ -3,10 +3,12 @@ import { Http, Response } from '@angular/http';
 import { Observable }     from 'rxjs/Observable';
 import { Subscription }     from 'rxjs/Subscription';
 
+import { environment } from '../environments/environment';
+
 @Injectable()
 export class PushService {
-  private pushUrl = 'http://localhost:9000/app/PushSub';
-  private vapidUrl = 'http://localhost:9000/app/VAPID';
+  private pushUrl = environment.baseUrl + '/app/push/Register';
+  private vapidUrl = environment.baseUrl + '/app/push/GetVAPIDKey';
   private registration: Subscription;
 
   constructor(private http: Http) {}
@@ -16,7 +18,7 @@ export class PushService {
     if (!body) {
       return "";
     }
-    return body["PublicKey"];
+    return body;
   }
 
   private handleError(error: Response | any) {
