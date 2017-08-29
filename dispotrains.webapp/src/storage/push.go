@@ -63,7 +63,7 @@ type Registration struct {
 }
 
 type Subscription struct {
-	Endpoind       string
+	Endpoint       string
 	ExpirationTime interface{}
 	Keys           SubscriptionKeys
 }

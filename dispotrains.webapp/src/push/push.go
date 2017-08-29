@@ -46,7 +46,7 @@ func PushToAll(session *mgo.Session) {
 }
 
 func pushToOne(registration *storage.Registration, vapid *storage.VAPIDKey) {
-	signedJWT, err := createSignedJWT(vapid, "")
+	signedJWT, err := createSignedJWT(vapid, registration.Subscription.Endpoint)
 	if err != nil {
 		log.Printf("Error while creating signed JWT: %v\n", err)
 		return

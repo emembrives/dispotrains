@@ -21,7 +21,7 @@ android:
     - extra-android-support
 
 before_script:
-    - gimme 1.5
+    - gimme 1.7
 
 script:
     # Android
