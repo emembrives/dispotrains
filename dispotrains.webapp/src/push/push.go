@@ -7,7 +7,9 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"net/url"
 	"time"
 
@@ -40,6 +42,7 @@ func PushToAll(session *mgo.Session) {
 	c := session.DB("dispotrains").C(pushRegistrationCollection)
 	registrations := make([]*storage.Registration, 0)
 	c.Find(nil).All(&registrations)
+	fmt.Printf("Sending to %d devices\n", len(registrations))
 	for _, registration := range registrations {
 		pushToOne(registration, vapid)
 	}
@@ -58,7 +61,23 @@ func pushToOne(registration *storage.Registration, vapid *storage.VAPIDKey) {
 		return
 	}
 	b64Key := base64.RawURLEncoding.EncodeToString(encodedKey)
-	log.Println(fmt.Sprintf("vapid t=%s,k=%s", signedJWT, b64Key))
+
+	var body io.Reader
+	request, err := http.NewRequest(
+		"POST", registration.Subscription.Endpoint, body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	request.Header.Add("Authorization", fmt.Sprintf("WebPush %s", signedJWT))
+	request.Header.Add("Crypto-Key", fmt.Sprintf("p256ecdsa=%s", b64Key))
+	request.Header.Add("TTL", fmt.Sprintf("%d", 0))
+	log.Println(request)
+	client := &http.Client{}
+	resp, err := client.Do(request)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(resp)
 }
 
 func createSignedJWT(vapidKey *storage.VAPIDKey, endpoint string) (string, error) {

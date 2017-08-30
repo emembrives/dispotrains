@@ -33,7 +33,7 @@ func PushToAllHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
-	if req.Method != "POST" {
+	if req.Method != "GET" {
 		return
 	}
 	push.PushToAll(session)
