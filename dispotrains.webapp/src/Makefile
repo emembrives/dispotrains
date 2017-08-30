@@ -4,7 +4,7 @@ app: _go_deps _js_deps _ln_deps
 	go build -o ../build/server ./app/*.go
 
 _js_deps:
-	cd app/static/js && bower install --allow-root --production
+	cd web && npm install && node_modules/@angular/cli/bin/ng build
 
 _ln_deps:
 	mkdir -p ../build/
