@@ -1,13 +1,13 @@
 package main
 
 import (
-	"crypto/elliptic"
 	"encoding/json"
 	"log"
 	"net/http"
 
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/push"
-	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
+
+	webpush "github.com/SherClockHolmes/webpush-go"
 )
 
 func PushRegisterHandler(w http.ResponseWriter, req *http.Request) {
@@ -19,7 +19,7 @@ func PushRegisterHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var data storage.Subscription
+	var data webpush.Subscription
 	err := json.NewDecoder(req.Body).Decode(&data)
 	if err != nil {
 		log.Println(err)
@@ -45,6 +45,6 @@ func GetVAPIDKeyHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Cache-control", "public, max-age=86400")
 
-	key := push.GetOrCreateVAPIDKey(session).ToElliptic()
-	json.NewEncoder(w).Encode(elliptic.Marshal(key.Curve, key.X, key.Y))
+	key := push.GetOrCreateVAPIDKey(session)
+	json.NewEncoder(w).Encode(key.PublicKey)
 }
