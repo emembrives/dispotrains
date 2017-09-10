@@ -54,7 +54,7 @@ export class PushService {
       if (subscription) {
         return Promise.resolve(subscription);
       }
-      let encodedKey = Uint8Array.from(Array.from(atob(key)).map((c : string) => {
+      let encodedKey = Uint8Array.from(Array.from(key).map((c : string) => {
         return c.codePointAt(0);
       }));
       return registration.pushManager.subscribe({
