@@ -25,14 +25,14 @@ var (
 	lineTmpl         = template.Must(template.ParseFiles("templates/line.html", "templates/footer.html", "templates/header.html"))
 	stationTmpl      = template.Must(template.ParseFiles("templates/station.html", "templates/footer.html", "templates/header.html"))
 	stationStatsTmpl = template.Must(template.ParseFiles("templates/stats.html", "templates/footer.html", "templates/header.html"))
-	session = createSessionOrDie()
+	session          = createSessionOrDie()
 )
 
 type Line struct {
 	Network      string
 	ID           string
-	GoodStations []*storage.Station `bson:"goodStations"`
-	BadStations  []*storage.Station `bson:"badStations"`
+	GoodStations []*storage.Station
+	BadStations  []*storage.Station
 	LastUpdate   time.Time
 }
 

@@ -45,22 +45,20 @@ func (elevator *Elevator) NewStatus(description string, date string) (*Status, e
 func (elevator *Elevator) NewViaNavigoStatus(state string, updateStr string, forecastStr string) (*Status, error) {
 	var status *Status = &Status{State: viaNavigoStates[state],
 		elevator: elevator}
-	lastUpdate, err := time.Parse("2006-01-02T15:04", strings.TrimSpace(updateStr))
-	if err != nil {
-		return nil, err
-	}
 	loc, err := time.LoadLocation("Europe/Paris")
 	if err != nil {
 		panic(err)
 	}
-	status.LastUpdate = overrideLocation(lastUpdate, loc)
+	status.LastUpdate, err = time.ParseInLocation("2006-01-02T15:04", strings.TrimSpace(updateStr), loc)
+	if err != nil {
+		return nil, err
+	}
 	elevator.Status = status
 	if len(forecastStr) != 0 {
-		forecast, err := time.Parse("2006-01-02T15:04", strings.TrimSpace(forecastStr))
+		forecast, err := time.ParseInLocation("2006-01-02T15:04", strings.TrimSpace(forecastStr), loc)
 		if err != nil {
 			return nil, err
 		}
-		forecast = overrideLocation(forecast, loc)
 		status.Forecast = &forecast
 	}
 	return status, nil
