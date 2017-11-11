@@ -13,6 +13,10 @@ import (
 	"gopkg.in/zabawaba99/firego.v1"
 )
 
+const (
+	server = "db"
+)
+
 func uploadToFirebase(session *mgo.Session) error {
 	d, err := ioutil.ReadFile("/dispotrains/key/dispotrains.json")
 	if err != nil {
@@ -41,7 +45,7 @@ func uploadToFirebase(session *mgo.Session) error {
 }
 
 func main() {
-	session, err := mgo.DialWithTimeout("db", time.Minute)
+	session, err := mgo.DialWithTimeout(server, time.Minute)
 	if err != nil {
 		panic(err)
 	}
@@ -68,7 +72,9 @@ func main() {
 	// Build the lines database collection.
 	bulk := c.Bulk()
 	bulk.RemoveAll(nil)
-	bulk.Insert(stations)
+	for _, station := range stations {
+		bulk.Insert(station)
+	}
 	_, err = bulk.Run()
 	if err != nil {
 		panic(err)
@@ -78,7 +84,9 @@ func main() {
 	c = session.DB("dispotrains").C("lines")
 	bulk = c.Bulk()
 	bulk.RemoveAll(nil)
-	bulk.Insert(lines)
+	for _, line := range lines {
+		bulk.Insert(line)
+	}
 	_, err = bulk.Run()
 	if err != nil {
 		panic(err)
@@ -86,10 +94,27 @@ func main() {
 
 	// Append the new statuses to the database log.
 	c = session.DB("dispotrains").C("statuses")
+	var result bson.M
+	iter := c.Pipe([]bson.M{
+		bson.M{"$group": bson.M{
+			"_id":   bson.M{"state": "$state", "lastupdate": "$lastupdate", "elevator": "$elevator"},
+			"obj":   bson.M{"$push": "$_id"},
+			"count": bson.M{"$sum": 1},
+		}},
+		bson.M{"$match": bson.M{
+			"_id":   bson.M{"$ne": nil},
+			"count": bson.M{"$gt": 1}}},
+	}).AllowDiskUse().Iter()
+	for iter.Next(&result) {
+		c.Remove(bson.M{"_id": result["obj"].([]interface{})[0]})
+	}
+	if err := iter.Close(); err != nil {
+		panic(err)
+	}
+
 	index := mgo.Index{
 		Key:        []string{"state", "lastupdate", "elevator"},
 		Background: true,
-		DropDups:   true,
 		Sparse:     true,
 		Unique:     true,
 	}
@@ -99,6 +124,9 @@ func main() {
 	}
 	for _, station := range stations {
 		for _, elevator := range station.GetElevators() {
+			if elevator.Status == nil {
+				continue
+			}
 			bsonStatus := bson.M{
 				"state":      elevator.Status.State,
 				"lastupdate": elevator.Status.LastUpdate,
