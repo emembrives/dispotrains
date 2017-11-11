@@ -83,3 +83,13 @@ func (station *Station) NewElevator(id, situation, direction string) *Elevator {
 func (station *Station) GetElevators() []*Elevator {
 	return station.Elevators
 }
+
+func (station *Station) Available() bool {
+	for _, elevator := range station.Elevators {
+		status := elevator.GetLastStatus()
+		if status != nil && status.State != "Disponible" {
+			return false
+		}
+	}
+	return true
+}

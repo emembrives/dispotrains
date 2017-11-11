@@ -30,6 +30,26 @@ func (line *Line) GetStations() []*Station {
 	return line.stations
 }
 
+func (line *Line) GoodStations() []*Station {
+	good := make([]*Station, 0)
+	for _, station := range line.stations {
+		if station.Available() {
+			good = append(good, station)
+		}
+	}
+	return good
+}
+
+func (line *Line) BadStations() []*Station {
+	bad := make([]*Station, 0)
+	for _, station := range line.stations {
+		if !station.Available() {
+			bad = append(bad, station)
+		}
+	}
+	return bad
+}
+
 func (line *Line) GetURL() *url.URL {
 	var path *url.URL
 	path, err := url.Parse("http://www.infomobi.com/fr/voyageurs-en-fauteuil/transports-publics-accessibles/gares-et-stations-accessibles/?tx_stifinfomobi_pi7[externalcode]=changeme")

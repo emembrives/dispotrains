@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	server = "db"
+	//	server = "db"
+	server = "localhost"
 )
 
 func uploadToFirebase(session *mgo.Session) error {
@@ -85,7 +86,13 @@ func main() {
 	bulk = c.Bulk()
 	bulk.RemoveAll(nil)
 	for _, line := range lines {
-		bulk.Insert(line)
+		bulk.Insert(bson.M{
+			"network":      line.Network,
+			"id":           line.ID,
+			"lastupdate":   line.LastUpdate,
+			"goodstations": line.GoodStations(),
+			"badstations":  line.BadStations(),
+		})
 	}
 	_, err = bulk.Run()
 	if err != nil {
