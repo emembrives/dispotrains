@@ -2,7 +2,7 @@
   flex: 1 1 auto;
 }
 
-md-list-item div {
+mat-list-item div {
   display: flex;
 }
 

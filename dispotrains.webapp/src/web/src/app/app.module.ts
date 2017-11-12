@@ -2,9 +2,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
+import { MatListModule, MatIconModule, MatToolbarModule } from '@angular/material';
 import { AppRoutingModule } from './app-routing.module';
-import { MaterialModule } from '@angular/material';
-
 
 import { AppComponent } from './app.component';
 import { StationItemComponent } from './station-item/station-item.component';
@@ -17,7 +16,6 @@ import { TitlebarComponent } from './titlebar/titlebar.component';
 
 import { StationService } from './station.service';
 import { LinesService } from './lines.service';
-import { PushService } from './push.service';
 
 @NgModule({
   declarations: [
@@ -28,16 +26,18 @@ import { PushService } from './push.service';
     StationComponent,
     StationStatsComponent,
     ElevatorItemComponent,
-    TitlebarComponent
+    TitlebarComponent,
   ],
   imports: [
     BrowserModule,
     FormsModule,
     HttpModule,
     AppRoutingModule,
-    MaterialModule,
+    MatListModule,
+    MatIconModule,
+    MatToolbarModule,
   ],
-  providers: [StationService, LinesService, PushService],
+  providers: [StationService, LinesService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

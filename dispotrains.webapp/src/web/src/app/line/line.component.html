@@ -1,12 +1,12 @@
 <titlebar [title]="(line | async)?.GetName() + ' - Dispotrains'" [root]="false"></titlebar>
-<md-nav-list>
-  <h2 md-subheader>Avec dysfonctionnement(s)</h2>
-  <a md-list-item *ngFor="let station of badStations | async" [routerLink]="['/gare', station.name]">
+<mat-nav-list>
+  <h2 mat-subheader>Avec dysfonctionnement(s)</h2>
+  <a mat-list-item *ngFor="let station of badStations | async" [routerLink]="['/gare', station.name]">
     <station-item [station]=station></station-item>
   </a>
-  <md-divider></md-divider>
-  <h2 md-subheader>En fonctionnement</h2>
-  <a md-list-item *ngFor="let station of goodStations | async" [routerLink]="['/gare', station.name]">
+  <mat-divider></mat-divider>
+  <h2 mat-subheader>En fonctionnement</h2>
+  <a mat-list-item *ngFor="let station of goodStations | async" [routerLink]="['/gare', station.name]">
     <station-item [station]=station></station-item>
   </a>
-</md-nav-list>
+</mat-nav-list>

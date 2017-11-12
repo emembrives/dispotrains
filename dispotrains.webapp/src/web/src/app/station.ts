@@ -27,8 +27,13 @@ export class Status {
   state: string;
 
   constructor(statusData: Object) {
+    if (statusData != undefined) {
     this.lastupdate = statusData["lastupdate"];
     this.state = statusData["state"];
+    } else {
+      this.lastupdate = "";
+      this.state = "Information non disponible";
+    }
   }
 }
 

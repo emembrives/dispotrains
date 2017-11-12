@@ -15,8 +15,8 @@ export class StationService {
 
   constructor(private http: Http) {
     this.stations = this.http.get(this.stationsUrl)
-      .map(this.extractData)
       .catch(this.handleError)
+      .map(this.extractData)
       .publishLast()
       .refCount();
   }

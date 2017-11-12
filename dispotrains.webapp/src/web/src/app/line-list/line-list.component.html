@@ -1,4 +1,4 @@
 <titlebar [title]="'DispoTrains'" [root]="true"></titlebar>
-<md-nav-list>
-  <a md-list-item *ngFor="let line of lines | async" [routerLink]="['/ligne', line.id]">{{ line.network }} {{ line.id }}</a>
-</md-nav-list>
+<mat-nav-list>
+  <a mat-list-item *ngFor="let line of lines | async" [routerLink]="['/ligne', line.id]">{{ line.network }} {{ line.id }}</a>
+</mat-nav-list>

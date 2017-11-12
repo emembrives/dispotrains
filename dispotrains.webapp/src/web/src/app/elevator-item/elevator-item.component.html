@@ -1,12 +1,12 @@
-<md-list-item [class.broken]="isBroken()">
-  <div md-line>
+<mat-list-item [class.broken]="isBroken()">
+  <div mat-line>
     <span><strong>{{ elevator.situation }}</strong></span>
     <span class="autofill"></span>
     <span><strong>{{ elevator.status.state}}</strong></span>
   </div>
-  <div md-line>
+  <div mat-line>
     <span>{{ elevator.direction }}</span>
     <span class="autofill"></span>
     <span>{{ elevator.status.lastupdate | date:'dd/MM/y HH:MM' }}</span>
   </div>
-</md-list-item>
+</mat-list-item>
