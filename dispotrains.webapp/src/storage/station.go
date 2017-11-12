@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"net/url"
 	"strings"
 	"time"
 )
@@ -19,7 +18,7 @@ type Station struct {
 	OsmID        string
 	Lines        []*Line
 	Elevators    []*Elevator
-	code         string
+	Code         string
 	HasElevators bool
 	LastUpdate   time.Time
 }
@@ -29,7 +28,7 @@ func NewStation(name, city, code string) *Station {
 	station.Name = strings.Replace(strings.TrimSpace(name), "/", "-", -1)
 	station.DisplayName = computeDisplayName(station.Name)
 	station.City = strings.TrimSpace(city)
-	station.code = code
+	station.Code = code
 	station.HasElevators = true
 	return station
 }
@@ -85,14 +84,12 @@ func (station *Station) GetElevators() []*Elevator {
 	return station.Elevators
 }
 
-func (station *Station) GetURL() *url.URL {
-	var path *url.URL
-	path, err := url.Parse("http://www.infomobi.com/fr/voyageurs-en-fauteuil/transports-publics-accessibles/gares-et-stations-accessibles/disponibilite-des-ascenseurs/?tx_stifinfomobi_pi3[externalcode]=changeme")
-	if err != nil {
-		panic(err)
+func (station *Station) Available() bool {
+	for _, elevator := range station.Elevators {
+		status := elevator.GetLastStatus()
+		if status != nil && status.State != "Disponible" {
+			return false
+		}
 	}
-	q := path.Query()
-	q.Set("tx_stifinfomobi_pi3[externalcode]", station.code)
-	path.RawQuery = q.Encode()
-	return path
+	return true
 }

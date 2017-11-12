@@ -31,16 +31,12 @@ var (
 type Line struct {
 	Network      string
 	ID           string
-	GoodStations []*storage.Station `bson:"goodStations"`
-	BadStations  []*storage.Station `bson:"badStations"`
+	GoodStations []*storage.Station
+	BadStations  []*storage.Station
 	LastUpdate   time.Time
 }
 
-type LineHolder struct {
-	Value Line
-}
-
-type LineSlice []LineHolder
+type LineSlice []Line
 
 type DisplayStation struct {
 	Name         string
@@ -65,14 +61,6 @@ func (e *LocElevator) LocalStatusDate() string {
 	return dateformat.FormatLocale(e.Status.LastUpdate, "ddd D MMM à HH:MM", dateformat.French)
 }
 
-func (ls LineSlice) Lines() []Line {
-	r := make([]Line, len(ls))
-	for i, v := range ls {
-		r[i] = v.Value
-	}
-	return r
-}
-
 func createSessionOrDie() *mgo.Session {
 	session, err := mgo.Dial(mongoDbHost)
 	if err != nil {
@@ -86,8 +74,8 @@ func HomeHandler(w http.ResponseWriter, req *http.Request) {
 
 	c := session.DB("dispotrains").C("lines")
 	var lines LineSlice = make(LineSlice, 0)
-	c.Find(nil).Sort("value.network", "value.id").All(&lines)
-	homeTmpl.Execute(w, lines.Lines())
+	c.Find(nil).Sort("network", "id").All(&lines)
+	homeTmpl.Execute(w, lines)
 }
 
 func LineHandler(w http.ResponseWriter, req *http.Request) {
@@ -96,10 +84,10 @@ func LineHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	lineId := vars["line"]
 
-	var line LineHolder
-	c.Find(bson.M{"value.id": lineId}).One(&line)
-	w.Header().Set("Last-Modified", line.Value.LastUpdate.UTC().Format(time.RFC1123))
-	if err := lineTmpl.Execute(w, line.Value); err != nil {
+	var line Line
+	c.Find(bson.M{"id": lineId}).One(&line)
+	w.Header().Set("Last-Modified", line.LastUpdate.UTC().Format(time.RFC1123))
+	if err := lineTmpl.Execute(w, line); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -230,7 +218,7 @@ func GetLinesHandler(w http.ResponseWriter, req *http.Request) {
 
 	c := session.DB("dispotrains").C("lines")
 	var lines = make(LineSlice, 0)
-	if err := c.Find(nil).Sort("value.network", "value.id").All(&lines); err != nil {
+	if err := c.Find(nil).Sort("network", "id").All(&lines); err != nil {
 		log.Println(err)
 	}
 	json.NewEncoder(w).Encode(&lines)

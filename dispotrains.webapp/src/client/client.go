@@ -1,156 +1,206 @@
 package client
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
-	"net/url"
-	"strings"
+	"time"
 
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
-	"golang.org/x/net/html"
 )
 
-func GetAllLines() ([]*storage.Line, error) {
-	resp, err := http.Get("http://www.infomobi.com/fr/voyageurs-en-fauteuil/transports-publics-accessibles/gares-et-stations-accessibles/")
+type parser struct {
+	stations map[string]*storage.Station
+}
+
+func newParser() *parser {
+	parser := &parser{}
+	parser.stations = make(map[string]*storage.Station)
+	return parser
+}
+
+func GetAndParseLines() ([]*storage.Line, []*storage.Station, error) {
+	req, err := http.NewRequest("GET",
+		"https://api.vianavigo.com/elevatorsInfo", nil)
 	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Add("X-Host-Override", "vgo-api")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	parser := newParser()
+	lines, err := parser.parseRawData(resp.Body)
+	if err != nil {
+		return nil, nil, err
+	}
+	stations := make([]*storage.Station, 0, len(parser.stations))
+	for _, v := range parser.stations {
+		stations = append(stations, v)
+	}
+	return lines, stations, nil
+}
+
+func (parser *parser) parseRawData(input io.Reader) ([]*storage.Line, error) {
+	decoder := json.NewDecoder(input)
+	data := make([]map[string]interface{}, 0)
+	if err := decoder.Decode(&data); err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-	bodyParser, err := html.Parse(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	var form *html.Node = findNode(bodyParser, "form")
-	var optgroup *html.Node = findNode(form, "optgroup")
-	var lines []*storage.Line = parseOptGroup(optgroup, optgroup.Attr[0].Val)
-	optgroup = findNext(optgroup)
-	lines = append(lines, parseOptGroup(optgroup, optgroup.Attr[0].Val)...)
-	optgroup = findNext(optgroup)
-	lines = append(lines, parseOptGroup(optgroup, optgroup.Attr[0].Val)...)
-	for _, line := range lines {
-		getStations(line)
+	lines := make([]*storage.Line, len(data))
+	var err error
+	for index, lineData := range data {
+		lines[index], err = parser.parseLine(lineData)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return lines, nil
 }
 
-func parseOptGroup(optgroup *html.Node, network string) []*storage.Line {
-	var lines []*storage.Line = make([]*storage.Line, 0)
-	for option := optgroup.FirstChild; option != nil; option = option.NextSibling {
-		if option.Type != html.ElementNode {
-			continue
+func (parser *parser) parseLine(lineData map[string]interface{}) (*storage.Line, error) {
+	network, ok := lineData["mode"].(string)
+	if !ok {
+		return nil, fmt.Errorf(
+			"lineData[\"mode\"]=%+v not a string", lineData["mode"])
+	}
+	name, ok := lineData["shortName"].(string)
+	if !ok {
+		return nil, fmt.Errorf(
+			"lineData[\"shortName\"]=%+v not a string", lineData["shortName"])
+	}
+	code, ok := lineData["id"].(string)
+	if !ok {
+		return nil, fmt.Errorf(
+			"lineData[\"code\"]=%+v not a string", lineData["code"])
+	}
+	line := storage.NewLine(network, name, code)
+	stationsData, ok := lineData["stops"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf(
+			"Unable to interpret stations data for line %s", line.ID)
+	}
+	for _, iStationData := range stationsData {
+		stationData, ok := iStationData.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf(
+				"Unable to parse station data for line %s", line.ID)
 		}
-		var code string = option.Attr[0].Val
-		var name string = option.FirstChild.Data
-		lines = append(lines, storage.NewLine(network, name, code))
-	}
-	return lines
-}
-
-func getStations(line *storage.Line) ([]*storage.Station, error) {
-	var url *url.URL = line.GetURL()
-	resp, err := http.Get(url.String())
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	bodyParser, err := html.Parse(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	var stations []*storage.Station = make([]*storage.Station, 0)
-	var table *html.Node = findNode(bodyParser, "table")
-	if table == nil {
-		return stations, nil
-	}
-	var tbody *html.Node = findNode(table, "tbody")
-	var row *html.Node
-	for row = findNode(tbody, "tr"); row != nil; row = findNext(row) {
-		var col *html.Node = findNode(row, "td")
-		var fullName string = col.FirstChild.Data
-		var nameCity []string = strings.Split(fullName, ",")
-		var name string = nameCity[0]
-		var city string
-		if len(nameCity) > 1 {
-			city = nameCity[1]
-		}
-		col = findNext(col)
-		//findAttrByKey(findNode(col, "p"), "class")
-		col = findNext(col)
-		var a *html.Node = findNode(col, "a")
-		var station *storage.Station
-		if a != nil {
-			stationUrl, err := url.Parse(findAttrByKey(a, "href").Val)
-			if err != nil {
-				return nil, err
-			}
-			var code string = stationUrl.Query().Get("tx_stifinfomobi_pi3[externalcode]")
-			station = storage.NewStation(name, city, code)
-		} else {
-			station = storage.NewRampStation(name, city)
+		station, err := parser.parseStation(stationData)
+		if err != nil {
+			return nil, err
 		}
 		station.AttachLine(line)
-		getElevatorsAndStatus(station)
 		if station.LastUpdate.After(line.LastUpdate) {
 			line.LastUpdate = station.LastUpdate
 		}
-		stations = append(stations, station)
 	}
-	return stations, nil
+	return line, nil
 }
 
-func getElevatorsAndStatus(station *storage.Station) error {
-	if !station.HasElevators {
-		return nil
+func (parser *parser) parseStation(stationData map[string]interface{}) (*storage.Station, error) {
+	name, ok := stationData["label"].(string)
+	if !ok {
+		return nil, fmt.Errorf(
+			"stationData[\"label\"]=%+v not a string", stationData["label"])
 	}
-	var url *url.URL = station.GetURL()
-	resp, err := http.Get(url.String())
-	if err != nil {
-		return err
+	code, ok := stationData["id"].(string)
+	if !ok {
+		return nil, fmt.Errorf(
+			"stationData[\"id\"]=%+v not a string for station %s", stationData["id"],
+			name)
 	}
-	defer resp.Body.Close()
-	bodyParser, err := html.Parse(resp.Body)
-	if err != nil {
-		return err
+	var station *storage.Station
+	if station, ok = parser.stations[code]; ok {
+		return station, nil
 	}
-	var contents *html.Node = findNodeWithAttributes(bodyParser, "div", map[string]string{"id": "contentRight"})
-	var p *html.Node = findNode(contents, "p")
-	if !strings.HasPrefix(p.FirstChild.Data, "Situation en date du") {
-		p = findNext(p)
+	station = storage.NewStation(name, "", code)
+	parser.stations[code] = station
+	elevatorsData, ok := stationData["elevators"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("Unable to parse elevators data")
 	}
-	if !strings.HasPrefix(p.FirstChild.Data, "Situation en date du") {
-		p = findNext(p)
-	}
-	var date string = p.FirstChild.Data[21:]
-	var table *html.Node = findNode(bodyParser, "table")
-	var tbody *html.Node = findNode(table, "tbody")
-	var row *html.Node
-	for row = findNode(tbody, "tr"); row != nil; row = findNext(row) {
-		var col *html.Node = findNode(row, "td")
-		var code, situation, direction, status string
-		if col.FirstChild != nil {
-			code = col.FirstChild.Data
+	var lastUpdate time.Time
+	for _, iElevatorData := range elevatorsData {
+		elevatorData, ok := iElevatorData.(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("Unable to parse elevator data")
 		}
-		col = findNext(col)
-		if col.FirstChild != nil {
-			situation = col.FirstChild.Data
-		}
-		col = findNext(col)
-		if col.FirstChild != nil {
-			direction = col.FirstChild.Data
-		}
-		col = findNext(col)
-		if col.FirstChild != nil && findNode(col, "span") != nil {
-			status = findNode(col, "span").FirstChild.Data
-		} else if col.FirstChild != nil {
-			status = col.FirstChild.Data
-		}
-		var elevator *storage.Elevator = station.NewElevator(code, situation, direction)
-		_, err = elevator.NewStatus(status, date)
+		elevator, err := parser.parseElevator(station, elevatorData)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		if elevator.Status.LastUpdate.After(station.LastUpdate) {
-			station.LastUpdate = elevator.Status.LastUpdate
+		if elevator.GetLastStatus() != nil &&
+			elevator.GetLastStatus().LastUpdate.After(lastUpdate) {
+			lastUpdate = elevator.GetLastStatus().LastUpdate
 		}
 	}
-	return nil
+	return station, nil
+}
+
+func (parser *parser) parseElevator(
+	station *storage.Station, elevatorData map[string]interface{}) (*storage.Elevator, error) {
+	var ok bool
+	elevatorID, ok := elevatorData["label"].(string)
+	if !ok {
+		return nil, fmt.Errorf(
+			"elevatorData[\"label\"]=%+v not a string", elevatorData["label"])
+	}
+	var elevatorSituation string
+	if _, ok = elevatorData["situation"]; ok {
+		elevatorSituation, ok = elevatorData["situation"].(string)
+		if !ok {
+			return nil, fmt.Errorf(
+				"elevatorData[\"situation\"]=%+v not a string for elevator %s",
+				elevatorData["situation"], elevatorID)
+		}
+	}
+	var elevatorDirection string
+	if _, ok = elevatorData["direction"]; ok {
+		elevatorDirection, ok = elevatorData["direction"].(string)
+		if !ok {
+			return nil, fmt.Errorf(
+				"elevatorData[\"direction\"]=%+v not a string for elevator %s",
+				elevatorData["direction"], elevatorID)
+		}
+	}
+
+	elevator := station.NewElevator(elevatorID, elevatorSituation,
+		elevatorDirection)
+
+	// Status
+	if _, ok := elevatorData["stateUpdate"]; !ok {
+		return elevator, nil
+	}
+
+	stateUpdate, ok := elevatorData["stateUpdate"].(string)
+	if !ok {
+		return nil, fmt.Errorf(
+			"elevatorData[\"stateUpdate\"]=%+v not a string for elevator %s", elevatorData["stateUpdate"],
+			elevator.ID)
+	}
+
+	if _, ok := elevatorData["state"]; !ok {
+		return elevator, nil
+	}
+	state, ok := elevatorData["state"].(string)
+	if !ok {
+		return nil, fmt.Errorf(
+			"elevatorData[\"state\"]=%+v not a string for elevator %s",
+			elevatorData["state"], elevator.ID)
+	}
+	forecastStr := ""
+	if _, ok = elevatorData["stateEndPrevision"]; ok {
+		forecastStr, ok = elevatorData["stateEndPrevision"].(string)
+		if !ok {
+			return nil, fmt.Errorf(
+				"elevatorData[\"stateEndPrevision\"]=%+v not a string for elevator %s",
+				elevatorData["stateEndPrevision"], elevator.ID)
+		}
+	}
+	elevator.NewViaNavigoStatus(state, stateUpdate, forecastStr)
+	return elevator, nil
 }

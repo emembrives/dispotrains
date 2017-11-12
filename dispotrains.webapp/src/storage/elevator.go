@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+var (
+	viaNavigoStates = map[string]string{
+		"0": "Inconnu ce jour",
+		"1": "Disponible",
+		"2": "Hors-service",
+		"3": "En travaux",
+		"4": "Perturbation"}
+)
+
 type Elevator struct {
 	ID        string
 	Situation string
@@ -30,6 +39,28 @@ func (elevator *Elevator) NewStatus(description string, date string) (*Status, e
 	}
 	status.LastUpdate = overrideLocation(lastUpdate, loc)
 	elevator.Status = status
+	return status, nil
+}
+
+func (elevator *Elevator) NewViaNavigoStatus(state string, updateStr string, forecastStr string) (*Status, error) {
+	var status *Status = &Status{State: viaNavigoStates[state],
+		elevator: elevator}
+	loc, err := time.LoadLocation("Europe/Paris")
+	if err != nil {
+		panic(err)
+	}
+	status.LastUpdate, err = time.ParseInLocation("2006-01-02T15:04", strings.TrimSpace(updateStr), loc)
+	if err != nil {
+		return nil, err
+	}
+	elevator.Status = status
+	if len(forecastStr) != 0 {
+		forecast, err := time.ParseInLocation("2006-01-02T15:04", strings.TrimSpace(forecastStr), loc)
+		if err != nil {
+			return nil, err
+		}
+		status.Forecast = &forecast
+	}
 	return status, nil
 }
 

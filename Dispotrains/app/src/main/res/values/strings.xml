@@ -5,16 +5,15 @@
         est possible que les informations qu\'il contient soient incomplètes, inexactes ou en retard par rapport à la situation réelle. N\'hésitez pas à me contacter (etienne+dispotrains@membrives.fr) si vous repérez de tels problèmes afin que je puisse y remédier.</p> <p>Le contenu de cette application est généré de manière automatique à partir de multiples sources publiques sur le réseau RATP et SNCF d\'Ile-de-France, son accessibilité et l\'état des équipements en gare.</p>
 
         <p>Cette application est distribuée sous license Apache 2.0 (http://www.apache.org/licenses/LICENSE-2.0.html). Le code source est disponible à l\'addresse https://github.com/sterops/tinkerings/tree/master/Dispotrains .</p></string>
-    <string name="tutorial_title">
-        Bienvenue dans Dispotrains
-    </string>
-    <string name="tutorial_content">
-        Après le chargement initial, retrouvez l\'ensemble des lignes de RER, Transilien et
-        Tramway accessibles en Ile-de-France, ainsi que l\'état des ascenseurs. Les données sont
-        vérifiées trois fois par jour.
+    <string name="end_message">
+        <p>Dispotrains, c\'est fini!</p>
+        <p>Merci d\'avoir utilisé DispoTrains. Infomobi, la source de données de Dispotrains,
+            vient de fermer et est remplacé par ViaNavigo. Le nouveau site est adapté aux
+            mobiles, rendant Dispotrains inutile. Vous pouvez retrouver les informations de
+            disponibilité d\'ascenseurs sur la page <a
+                href="https://www.vianavigo.com/ascenseurs/">https://www.vianavigo
+            .com/ascenseurs/</a></p>
     </string>
     <string name="action_about">A propos</string>
     <string name="action_refresh">Actualiser</string>
-    <string name="action_watch_off">Suivre cette gare</string>
-    <string name="action_watch_on">Arrêter de suivre cette gare</string>
 </resources>

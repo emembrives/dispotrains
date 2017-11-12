@@ -1,15 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest package="fr.membrives.dispotrains"
           xmlns:android="http://schemas.android.com/apk/res/android"
-          android:versionCode="3000"
+          android:versionCode="3001"
           android:versionName="3.0.0">
-
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
-    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
-    <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
 
     <application
         android:name="fr.membrives.dispotrains.DispotrainsApplication"
@@ -27,47 +20,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name="StationListActivity"
-            android:parentActivityName="fr.membrives.dispotrains.MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="fr.membrives.dispotrains.MainActivity"/>
-        </activity>
-
-        <activity
-            android:name="StationDetailActivity"
-            android:parentActivityName="fr.membrives.dispotrains.StationListActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="fr.membrives.dispotrains.StationListActivity"/>
-        </activity>
-
-        <service android:name=".sync.AuthenticatorService">
-            <intent-filter>
-                <action android:name="android.accounts.AccountAuthenticator"/>
-            </intent-filter>
-
-            <meta-data
-                android:name="android.accounts.AccountAuthenticator"
-                android:resource="@xml/authenticator"/>
-        </service>
-
-        <provider
-            android:name=".sync.ElevatorContentProvider"
-            android:authorities="fr.membrives.dispotrains"
-            android:exported="false"
-            android:syncable="true"/>
-
-        <service android:name=".sync.SyncService">
-            <intent-filter>
-                <action android:name="android.content.SyncAdapter"/>
-            </intent-filter>
-
-            <meta-data
-                android:name="android.content.SyncAdapter"
-                android:resource="@xml/sync_adapter"/>
-        </service>
     </application>
 
 </manifest>

@@ -46,17 +46,22 @@ func readCsvFile() (stations []csvStation) {
 
 // AddPositionToStations adds Latitude/Longitude coordinates data from side CSV
 // file to the station map.
-func AddPositionToStations(stations map[string]*storage.Station) {
+func AddPositionToStations(stations []*storage.Station) {
 	csvStations := readCsvFile()
 
+	stationMap := make(map[string]*storage.Station)
+	for _, station := range stations {
+		stationMap[strings.ToLower(station.Name)] = station
+	}
+
 	for _, csvStation := range csvStations {
-		if _, ok := stations[strings.ToLower(csvStation.Name)]; !ok {
+		if _, ok := stationMap[strings.ToLower(csvStation.Name)]; !ok {
 			log.Println(csvStation.Name + " not found")
 			continue
 		}
 
-		stations[strings.ToLower(csvStation.Name)].Position.Latitude = csvStation.Latitude
-		stations[strings.ToLower(csvStation.Name)].Position.Longitude = csvStation.Longitude
-		stations[strings.ToLower(csvStation.Name)].OsmID = csvStation.OsmID
+		stationMap[strings.ToLower(csvStation.Name)].Position.Latitude = csvStation.Latitude
+		stationMap[strings.ToLower(csvStation.Name)].Position.Longitude = csvStation.Longitude
+		stationMap[strings.ToLower(csvStation.Name)].OsmID = csvStation.OsmID
 	}
 }

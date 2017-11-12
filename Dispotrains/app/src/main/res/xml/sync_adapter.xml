@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<sync-adapter xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accountType="fr.membrives.dispotrains"
-    android:allowParallelSyncs="false"
-    android:contentAuthority="fr.membrives.dispotrains"
-    android:isAlwaysSyncable="true"
-    android:supportsUploading="true"
-    android:userVisible="true" />
