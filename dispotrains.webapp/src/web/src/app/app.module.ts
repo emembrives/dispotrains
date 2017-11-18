@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
-import { MatListModule, MatIconModule, MatToolbarModule } from '@angular/material';
+import { MatListModule, MatIconModule, MatToolbarModule, MatCardModule } from '@angular/material';
 import { AppRoutingModule } from './app-routing.module';
 
 import { AppComponent } from './app.component';
@@ -16,9 +16,11 @@ import { TitlebarComponent } from './titlebar/titlebar.component';
 
 import { StationService } from './station.service';
 import { LinesService } from './lines.service';
+import { AboutComponent } from './about/about.component';
 
 @NgModule({
   declarations: [
+    AboutComponent,
     AppComponent,
     StationItemComponent,
     LineListComponent,
@@ -36,6 +38,7 @@ import { LinesService } from './lines.service';
     MatListModule,
     MatIconModule,
     MatToolbarModule,
+    MatCardModule,
   ],
   providers: [StationService, LinesService],
   bootstrap: [AppComponent]

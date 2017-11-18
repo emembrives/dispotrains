@@ -1,15 +1,10 @@
-<mat-toolbar color="primary" class="mat-elevation-z6">
+<mat-toolbar color="primary" class="mat-elevation-z6" role="header">
   <span>
-    <a *ngIf="hasBack()" color="primary" mat-mini-fab  (click)="goBack()"><mat-icon>arrow_back</mat-icon></a>
+    <a *ngIf="hasBack()" color="primary" mat-mini-fab  (click)="goBack()"><mat-icon role="button" alt="Retour">arrow_back</mat-icon></a>
   </span>
   <span class="title"><h1>{{ title }}</h1></span>
   <span id="autofill"></span>
   <span>
-    <a color="primary" mat-mini-fab  href="https://play.google.com/store/apps/details?id=fr.membrives.dispotrains"><mat-icon>android</mat-icon></a>
-
-    <a color="primary" mat-mini-fab href="/static/map.html"><mat-icon>map</mat-icon></a>
-
-    <a color="primary" mat-mini-fab onclick="document.getElementById('about-dialog').open()" ><mat-icon alt="À propos">help_outline</mat-icon></a>
-
+    <a color="primary" mat-mini-fab [routerLink]="['/about']" ><mat-icon alt="À propos" role="button">help_outline</mat-icon></a>
   </span>
 </mat-toolbar>

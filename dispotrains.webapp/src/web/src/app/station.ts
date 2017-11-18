@@ -25,14 +25,17 @@ export class Position {
 export class Status {
   lastupdate: string;
   state: string;
+  forecast: string;
 
   constructor(statusData: Object) {
     if (statusData != undefined) {
-    this.lastupdate = statusData["lastupdate"];
-    this.state = statusData["state"];
+      this.lastupdate = statusData["lastupdate"];
+      this.state = statusData["state"];
+      this.forecast = statusData["forecast"];
     } else {
       this.lastupdate = "";
       this.state = "Information non disponible";
+      this.forecast = undefined;
     }
   }
 }

@@ -16,4 +16,8 @@ export class ElevatorItemComponent {
   isBroken() : boolean {
     return !this.elevator.available();
   }
+
+  hasForecast() : boolean {
+    return this.elevator.status.forecast != undefined
+  }
 }
