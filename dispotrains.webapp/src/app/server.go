@@ -124,6 +124,22 @@ func CacheRequest(h http.Handler) http.Handler {
 	})
 }
 
+type FileHandlerWithDefault struct {
+	filename string
+	dir      http.Dir
+}
+
+func NewFileHandlerWithDefault(filename, path string) *FileHandlerWithDefault {
+	return &FileHandlerWithDefault{filename, http.Dir(path)}
+}
+
+func (s *FileHandlerWithDefault) Open(name string) (http.File, error) {
+	if f, err := s.dir.Open(name); err == nil {
+		return f, err
+	}
+	return s.dir.Open(s.filename)
+}
+
 func main() {
 	defer session.Close()
 	r := mux.NewRouter()
@@ -131,7 +147,7 @@ func main() {
 	r.HandleFunc("/app/GetStations/", GetStationsHandler)
 	r.HandleFunc("/app/AllStats/", VoronoiHandler)
 	r.PathPrefix("/static/").Handler(CacheRequest(http.StripPrefix("/static/", http.FileServer(http.Dir("static")))))
-	r.PathPrefix("/").Handler(CacheRequest(http.FileServer(http.Dir("dist"))))
+	r.PathPrefix("/").Handler(CacheRequest(http.FileServer(NewFileHandlerWithDefault("index.html", "dist"))))
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe("0.0.0.0:9000", nil))
 }
