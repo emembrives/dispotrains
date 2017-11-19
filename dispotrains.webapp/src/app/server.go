@@ -2,10 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"html/template"
 	"log"
 	"net/http"
-	"sort"
 	"time"
 
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
@@ -21,11 +19,7 @@ const (
 )
 
 var (
-	homeTmpl         = template.Must(template.ParseFiles("templates/lines.html", "templates/footer.html", "templates/header.html"))
-	lineTmpl         = template.Must(template.ParseFiles("templates/line.html", "templates/footer.html", "templates/header.html"))
-	stationTmpl      = template.Must(template.ParseFiles("templates/station.html", "templates/footer.html", "templates/header.html"))
-	stationStatsTmpl = template.Must(template.ParseFiles("templates/stats.html", "templates/footer.html", "templates/header.html"))
-	session          = createSessionOrDie()
+	session = createSessionOrDie()
 )
 
 type Line struct {
@@ -67,125 +61,6 @@ func createSessionOrDie() *mgo.Session {
 		panic(err)
 	}
 	return session
-}
-
-func HomeHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Cache-control", "public, max-age=86400")
-
-	c := session.DB("dispotrains").C("lines")
-	var lines LineSlice = make(LineSlice, 0)
-	c.Find(nil).Sort("network", "id").All(&lines)
-	homeTmpl.Execute(w, lines)
-}
-
-func LineHandler(w http.ResponseWriter, req *http.Request) {
-	c := session.DB("dispotrains").C("lines")
-
-	vars := mux.Vars(req)
-	lineId := vars["line"]
-
-	var line Line
-	c.Find(bson.M{"id": lineId}).One(&line)
-	w.Header().Set("Last-Modified", line.LastUpdate.UTC().Format(time.RFC1123))
-	if err := lineTmpl.Execute(w, line); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func StationHandler(w http.ResponseWriter, req *http.Request) {
-	c := session.DB("dispotrains").C("stations")
-
-	vars := mux.Vars(req)
-	stationName := vars["station"]
-
-	var station DisplayStation
-	c.Find(bson.M{"name": stationName}).One(&station)
-	for _, elevator := range station.Elevators {
-		if elevator.Status.State != "Disponible" {
-			station.BadElevators++
-		}
-	}
-	w.Header().Set("Last-Modified", station.LastUpdate.UTC().Format(time.RFC1123))
-	if err := stationTmpl.Execute(w, station); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func StatsHandler(w http.ResponseWriter, req *http.Request) {
-	cStations := session.DB("dispotrains").C("stations")
-	cStatuses := session.DB("dispotrains").C("statuses")
-	cStatistics := session.DB("dispotrains").C("statistics")
-
-	vars := mux.Vars(req)
-	stationName := vars["station"]
-
-	var station DisplayStation
-	cStations.Find(bson.M{"name": stationName}).One(&station)
-	var elevatorIds []string
-	for _, stationElevator := range station.Elevators {
-		elevatorIds = append(elevatorIds, stationElevator.ID)
-	}
-	var dbStatuses []dataStatus
-
-	index := mgo.Index{
-		Key: []string{"elevator"},
-	}
-	err := cStatuses.EnsureIndex(index)
-	if err != nil {
-		panic(err)
-	}
-	cStatuses.Find(bson.M{"elevator": bson.M{"$in": elevatorIds}}).
-		Sort("lastupdate").
-		All(&dbStatuses)
-
-	events, reports := statusesToEvents(dbStatuses)
-
-	var stats storage.StationStats
-	err = cStatistics.Find(bson.M{"name": stationName}).One(&stats)
-	if err != nil {
-		panic(err)
-	}
-
-	type TemplateData struct {
-		Station   DisplayStation
-		Events    map[string][]string
-		Reports   []string
-		StartDate string
-		EndDate   string
-		Stats     storage.StationStats
-	}
-	var templateData TemplateData
-	if len(elevatorIds) != 0 {
-		templateData = TemplateData{
-			station, events, reports, reports[0], reports[len(reports)-1], stats}
-	} else {
-		templateData = TemplateData{station, events, reports, "", "", stats}
-	}
-	if err = stationStatsTmpl.Execute(w, templateData); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func statusesToEvents(dbStatuses []dataStatus) (map[string][]string, []string) {
-	events := make(map[string][]string)
-	reportSet := make(map[string]bool)
-	for _, status := range dbStatuses {
-		dateStr := status.Lastupdate.Format(time.RFC3339)
-		reportSet[dateStr] = true
-		if _, ok := events[status.Elevator]; !ok {
-			events[status.Elevator] = make([]string, 0)
-		}
-		if status.State != "Disponible" {
-			events[status.Elevator] = append(events[status.Elevator], dateStr)
-		}
-	}
-
-	reports := make(sort.StringSlice, 0, len(reportSet))
-	for key := range reportSet {
-		reports = append(reports, key)
-	}
-	reports.Sort()
-	return events, reports
 }
 
 // VoronoiHandler sends historical data for the Voronoi map.
@@ -252,14 +127,11 @@ func CacheRequest(h http.Handler) http.Handler {
 func main() {
 	defer session.Close()
 	r := mux.NewRouter()
-	r.HandleFunc("/", HomeHandler)
-	r.HandleFunc("/ligne/{line}", LineHandler)
-	r.HandleFunc("/gare/{station}", StationHandler)
-	r.HandleFunc("/gare/{station}/stats", StatsHandler)
 	r.HandleFunc("/app/GetLines/", GetLinesHandler)
 	r.HandleFunc("/app/GetStations/", GetStationsHandler)
 	r.HandleFunc("/app/AllStats/", VoronoiHandler)
 	r.PathPrefix("/static/").Handler(CacheRequest(http.StripPrefix("/static/", http.FileServer(http.Dir("static")))))
+	r.PathPrefix("/").Handler(CacheRequest(http.FileServer(http.Dir("dist"))))
 	http.Handle("/", r)
 	log.Fatal(http.ListenAndServe("0.0.0.0:9000", nil))
 }
