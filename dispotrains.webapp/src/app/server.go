@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	mongoDbHost = "localhost"
+	mongoDbHost = "db"
 )
 
 var (
