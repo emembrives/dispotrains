@@ -1,10 +1,10 @@
 <mat-toolbar color="primary" class="mat-elevation-z6" role="header">
   <span>
-    <a *ngIf="hasBack()" color="primary" mat-mini-fab  (click)="goBack()"><mat-icon role="button" alt="Retour">arrow_back</mat-icon></a>
+    <a *ngIf="hasBack()" color="primary" mat-mini-fab (click)="goBack()"  title="Retour" role="button"><mat-icon>arrow_back</mat-icon></a>
   </span>
   <span class="title"><h1>{{ title }}</h1></span>
   <span id="autofill"></span>
   <span>
-    <a color="primary" mat-mini-fab [routerLink]="['/about']" ><mat-icon alt="À propos" role="button">help_outline</mat-icon></a>
+    <a color="primary" mat-mini-fab [routerLink]="['/about']" title="À propos de Dispotrains" role="button"><mat-icon>help_outline</mat-icon></a>
   </span>
 </mat-toolbar>
