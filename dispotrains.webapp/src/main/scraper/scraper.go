@@ -100,24 +100,6 @@ func main() {
 
 	// Append the new statuses to the database log.
 	c = session.DB("dispotrains").C("statuses")
-	var result bson.M
-	iter := c.Pipe([]bson.M{
-		bson.M{"$group": bson.M{
-			"_id":   bson.M{"state": "$state", "lastupdate": "$lastupdate", "elevator": "$elevator"},
-			"obj":   bson.M{"$push": "$_id"},
-			"count": bson.M{"$sum": 1},
-		}},
-		bson.M{"$match": bson.M{
-			"_id":   bson.M{"$ne": nil},
-			"count": bson.M{"$gt": 1}}},
-	}).AllowDiskUse().Iter()
-	for iter.Next(&result) {
-		c.Remove(bson.M{"_id": result["obj"].([]interface{})[0]})
-	}
-	if err := iter.Close(); err != nil {
-		panic(err)
-	}
-
 	index := mgo.Index{
 		Key:        []string{"state", "lastupdate", "elevator"},
 		Background: true,
@@ -128,6 +110,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	bulk = c.Bulk()
 	for _, station := range stations {
 		for _, elevator := range station.GetElevators() {
 			if elevator.Status == nil {
@@ -141,11 +124,13 @@ func main() {
 			if elevator.Status.Forecast != nil {
 				bsonStatus["forecast"] = elevator.Status.Forecast
 			}
-			err = c.Insert(bsonStatus)
-			if err != nil && !mgo.IsDup(err) {
-				panic(err)
-			}
+			bulk.Insert(bsonStatus)
 		}
+	}
+	bulk.Unordered()
+	_, err = bulk.Run()
+	if err != nil && !mgo.IsDup(err) {
+		panic(err)
 	}
 	uploadToFirebase(session)
 }
