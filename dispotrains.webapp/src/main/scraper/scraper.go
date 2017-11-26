@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/emembrives/dispotrains/dispotrains.webapp/src/assistant"
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/client"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -14,7 +15,7 @@ import (
 )
 
 const (
-	server = "db"
+	server = "localhost"
 )
 
 func uploadToFirebase(session *mgo.Session) error {
@@ -132,5 +133,5 @@ func main() {
 	if err != nil && !mgo.IsDup(err) {
 		panic(err)
 	}
-	uploadToFirebase(session)
+	assistant.UpdateStationList(stations)
 }
