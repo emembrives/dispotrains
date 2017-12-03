@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"regexp"
 	"strings"
@@ -17,7 +16,7 @@ import (
 
 const (
 	//keyFile = "/dispotrains/key/dialogflow.json"
-	keyFile = "../../Dispotrains-dialogflow.json"
+	keyFile = "../../dialogflow.json"
 )
 
 var (
@@ -59,7 +58,7 @@ func makeSynonyms(name string) []string {
 }
 
 // UpdateStationList updates the station entity list in the Assistant.
-func UpdateStationList(stations []*storage.Station) {
+func UpdateStationList(stations []*storage.Station) error {
 	entities := make([]Entity, len(stations))
 	for i, station := range stations {
 		entities[i].Value = station.Name
@@ -68,21 +67,24 @@ func UpdateStationList(stations []*storage.Station) {
 
 	client, err := getJWTKey()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	var b bytes.Buffer
 	encoder := json.NewEncoder(&b)
-	encoder.Encode(map[string]interface{}{"entities": entities})
-	log.Printf("Request: %s\n", b.String())
-	resp, err := client.Post(
-		"https://dialogflow.googleapis.com/v2beta1/projects/agent/entityTypes/Station/entities:batchUpdate", "application/json", &b)
+	encoder.Encode(map[string]interface{}{"name": "projects/dispotrains-bbaaa/agent/entityTypes/1e08aa94-12a3-49e5-9ddc-e0f9c557cd99",
+		"entities": entities})
+	req, err := http.NewRequest("PATCH", "https://dialogflow.googleapis.com/v2beta1/projects/dispotrains-bbaaa/agent/entityTypes/1e08aa94-12a3-49e5-9ddc-e0f9c557cd99?updateMask=entities", &b)
 	if err != nil {
-		panic(err)
+		return err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	log.Printf("Response: %s\n", string(body))
+	return nil
 }

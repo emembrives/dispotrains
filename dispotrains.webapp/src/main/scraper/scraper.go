@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	server = "localhost"
+	server = "db"
 )
 
 func uploadToFirebase(session *mgo.Session) error {
