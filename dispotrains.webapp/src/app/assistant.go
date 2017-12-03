@@ -45,12 +45,12 @@ func FulfillmentHandler(w http.ResponseWriter, req *http.Request) {
 	jsonReader.Decode(&data)
 	queryResult, ok := data["queryResult"].(map[string]interface{})
 	if !ok {
-		log.Println(data["queryResult"])
+		log.Printf("Error decoding queryResult: %v\n", data["queryResult"])
 		return
 	}
 	action, ok := queryResult["action"].(string)
 	if !ok {
-		log.Println(queryResult["action"])
+		log.Printf("Error decoding action: %v\n", queryResult["action"])
 		return
 	}
 	if action != "get_station_info" {
@@ -59,17 +59,17 @@ func FulfillmentHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	parameters, ok := queryResult["parameters"].(map[string]interface{})
 	if !ok {
-		log.Println(queryResult["parameters"])
+		log.Printf("Error decoding parameters: %v\n", queryResult["parameters"])
 		return
 	}
 	stationName, ok := parameters["station"].(string)
 	if !ok {
-		log.Println(parameters["station"])
+		log.Println("Error decoding station: %v\n", parameters["station"])
 		return
 	}
 	var station storage.Station
 	if err := c.Find(bson.M{"name": stationName}).One(&station); err != nil {
-		log.Println(err)
+		log.Println("Station %s not found: %v", stationName, err)
 		return
 	}
 	response := webhookResponse{}
