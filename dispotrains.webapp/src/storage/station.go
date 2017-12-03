@@ -93,3 +93,13 @@ func (station *Station) Available() bool {
 	}
 	return true
 }
+
+func (station *Station) LastElevatorUpdate() time.Time {
+	t := station.LastUpdate
+	for _, e := range station.Elevators {
+		if e.Status.LastUpdate.After(t) {
+			t = e.Status.LastUpdate
+		}
+	}
+	return t
+}

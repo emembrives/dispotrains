@@ -73,9 +73,9 @@ func FulfillmentHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	response := webhookResponse{}
-	response.FulfillmentText = fmt.Sprintf("Au %s, la gare de %s", station.LastUpdate.Format("02/01 à 15 heures 04"), station.DisplayName)
+	response.FulfillmentText = fmt.Sprintf("Au %s, la gare de %s", station.LastElevatorUpdate().Format("02/01 à 15 heures 04"), station.DisplayName)
 	if station.Available() {
-		response.FulfillmentText = response.FulfillmentText + "n'a aucun ascenseur en panne."
+		response.FulfillmentText = response.FulfillmentText + " n'a aucun ascenseur en panne."
 	} else {
 		broken := brokenElevators(station.Elevators)
 		noInfo := noInfoElevators(station.Elevators)
