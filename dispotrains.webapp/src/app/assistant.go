@@ -6,10 +6,28 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
 
 	"gopkg.in/mgo.v2/bson"
+)
+
+var (
+	months = map[time.Month]string{
+		1:  "janvier",
+		2:  "février",
+		3:  "mars",
+		4:  "avril",
+		5:  "mai",
+		6:  "juin",
+		7:  "juillet",
+		8:  "août",
+		9:  "septembre",
+		10: "octobre",
+		11: "novembre",
+		12: "décembre",
+	}
 )
 
 type webhookResponse struct {
@@ -73,7 +91,12 @@ func FulfillmentHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	response := webhookResponse{}
-	response.FulfillmentText = fmt.Sprintf("Au %s, la gare de %s", station.LastElevatorUpdate().Format("02/01 à 15 heures 04"), station.DisplayName)
+	response.FulfillmentText = fmt.Sprintf(
+		"Au %d %s à %s, la gare de %s",
+		station.LastElevatorUpdate().Day(),
+		months[station.LastElevatorUpdate().Month()],
+		station.LastElevatorUpdate().Format("15 heures 04"),
+		station.DisplayName)
 	if station.Available() {
 		response.FulfillmentText = response.FulfillmentText + " n'a aucun ascenseur en panne."
 	} else {
@@ -82,9 +105,9 @@ func FulfillmentHandler(w http.ResponseWriter, req *http.Request) {
 		var summary string
 		var descriptions string
 		if len(broken) == 0 && len(noInfo) == 0 {
-			summary = fmt.Sprintf(" a %d sur %d ascenseurs sans relevé.", len(noInfo), len(station.Elevators))
+			summary = fmt.Sprintf(" a %d ascenseurs sur %d sans relevé.", len(noInfo), len(station.Elevators))
 		} else if len(broken) != 0 {
-			summary = fmt.Sprintf(" a %d sur %d ascenseurs en panne et %d sans relevé. ", len(broken), len(station.Elevators), len(noInfo))
+			summary = fmt.Sprintf(" a %d ascenseurs sur %d en panne et %d sans relevé. ", len(broken), len(station.Elevators), len(noInfo))
 			descriptions = "Les ascenseurs en panne sont: "
 			for i, e := range broken {
 				if i != 0 {

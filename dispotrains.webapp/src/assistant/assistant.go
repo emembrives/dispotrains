@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	//keyFile = "/dispotrains/key/dialogflow.json"
-	keyFile = "../../dialogflow.json"
+	keyFile = "/dispotrains/key/dialogflow.json"
+	//keyFile = "../../dialogflow.json"
 )
 
 var (
