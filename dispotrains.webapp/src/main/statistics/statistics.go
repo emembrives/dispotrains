@@ -37,34 +37,36 @@ func newElevatorState(status storageStatus) *elevatorState {
 func main() {
 	session, err := mgo.Dial(server)
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 	defer session.Close()
 
 	cStatuses := session.DB("dispotrains").C("statuses")
 	err = cStatuses.EnsureIndexKey("lastupdate")
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 	err = cStatuses.EnsureIndexKey("elevator")
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 
 	var elevators []string
 	err = cStatuses.Find(nil).Select(bson.M{"elevator": 1}).Distinct("elevator", &elevators)
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 
 	cStatistics := session.DB("dispotrains").C("statistics")
 
 	for _, elevatorID := range elevators {
 		log.Printf("Processing elevator %s\n", elevatorID)
-		var elevatorState *elevatorState
+		elevatorState := &elevatorState{}
 		err = cStatistics.Find(bson.M{"elevator": elevatorID}).Sort("-begin").Limit(1).One(elevatorState)
 		if err != nil && err != mgo.ErrNotFound {
-			log.Fatalln(err)
+			panic(err)
+		} else if err == mgo.ErrNotFound {
+			elevatorState = nil
 		}
 		query := bson.M{"elevator": elevatorID}
 		if elevatorState != nil {
@@ -87,12 +89,12 @@ func main() {
 			}
 		}
 		if err := iter.Close(); err != nil {
-			log.Fatalln(err)
+			panic(err)
 		}
 	}
 
 	err = cStatistics.EnsureIndexKey("elevator")
 	if err != nil {
-		log.Fatalln(err)
+		panic(err)
 	}
 }
