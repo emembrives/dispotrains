@@ -10,10 +10,11 @@ import { StationItemComponent } from './station-item/station-item.component';
 import { LineListComponent } from './line-list/line-list.component';
 import { LineComponent } from './line/line.component';
 import { StationComponent } from './station/station.component';
-import { StationStatsComponent } from './station-stats/station-stats.component';
+import { ElevatorStatsComponent } from './elevator-stats/elevator-stats.component';
 import { ElevatorItemComponent } from './elevator-item/elevator-item.component';
 import { TitlebarComponent } from './titlebar/titlebar.component';
 
+import { ElevatorStatsService } from './elevator-stats.service';
 import { StationService } from './station.service';
 import { LinesService } from './lines.service';
 import { AboutComponent } from './about/about.component';
@@ -26,7 +27,7 @@ import { AboutComponent } from './about/about.component';
     LineListComponent,
     LineComponent,
     StationComponent,
-    StationStatsComponent,
+    ElevatorStatsComponent,
     ElevatorItemComponent,
     TitlebarComponent,
   ],
@@ -40,7 +41,7 @@ import { AboutComponent } from './about/about.component';
     MatToolbarModule,
     MatCardModule,
   ],
-  providers: [StationService, LinesService],
+  providers: [StationService, LinesService, ElevatorStatsService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

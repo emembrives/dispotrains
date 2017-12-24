@@ -5,7 +5,7 @@ import { AboutComponent } from './about/about.component';
 import { LineListComponent } from './line-list/line-list.component';
 import { LineComponent } from './line/line.component';
 import { StationComponent } from './station/station.component';
-import { StationStatsComponent } from './station-stats/station-stats.component';
+import { ElevatorStatsComponent } from './elevator-stats/elevator-stats.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/lignes', pathMatch: 'full' },
@@ -13,7 +13,7 @@ const routes: Routes = [
   { path: 'lignes', component: LineListComponent },
   { path: 'ligne/:id', component: LineComponent },
   { path: 'gare/:id', component: StationComponent },
-  { path: 'gare/:id/stats', component: StationStatsComponent },
+  { path: 'gare/:id/stats/:elevId', component: ElevatorStatsComponent },
 ];
 
 @NgModule({

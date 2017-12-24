@@ -4,20 +4,15 @@ import (
 	"log"
 	"time"
 
+	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
+
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 const (
-	server = "localhost"
+	server = "db"
 )
-
-type elevatorState struct {
-	Elevator string
-	State    string
-	Begin    time.Time
-	End      time.Time
-}
 
 type storageStatus struct {
 	Elevator   string
@@ -25,8 +20,8 @@ type storageStatus struct {
 	Lastupdate time.Time
 }
 
-func newElevatorState(status storageStatus) *elevatorState {
-	state := &elevatorState{}
+func newElevatorState(status storageStatus) *storage.ElevatorState {
+	state := &storage.ElevatorState{}
 	state.Elevator = status.Elevator
 	state.State = status.State
 	state.Begin = status.Lastupdate
@@ -61,7 +56,7 @@ func main() {
 
 	for _, elevatorID := range elevators {
 		log.Printf("Processing elevator %s\n", elevatorID)
-		elevatorState := &elevatorState{}
+		elevatorState := &storage.ElevatorState{}
 		err = cStatistics.Find(bson.M{"elevator": elevatorID}).Sort("-begin").Limit(1).One(elevatorState)
 		if err != nil && err != mgo.ErrNotFound {
 			panic(err)

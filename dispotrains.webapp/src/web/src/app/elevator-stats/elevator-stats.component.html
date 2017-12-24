@@ -1,0 +1,8 @@
+<p>
+  <elevator-item [elevator]="(elevator|async)"></elevator-item>
+</p>
+<ul>
+  <li *ngFor="let stat of (stats | async)">
+    {{ elevator.startdate }} - {{ elevator.enddate }} : {{ elevator.state }}
+  </li>
+</ul>

@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	mongoDbHost = "db"
+	mongoDbHost = "localhost"
 )
 
 var (
@@ -146,6 +146,7 @@ func main() {
 	r.HandleFunc("/app/GetLines/", GetLinesHandler)
 	r.HandleFunc("/app/GetStations/", GetStationsHandler)
 	r.HandleFunc("/app/AllStats/", VoronoiHandler)
+	r.HandleFunc("/app/Elevator/{id}", ElevatorHandler)
 	r.HandleFunc("/app/fulfillment/", FulfillmentHandler)
 	r.PathPrefix("/static/").Handler(CacheRequest(http.StripPrefix("/static/", http.FileServer(http.Dir("static")))))
 	r.PathPrefix("/").Handler(CacheRequest(http.FileServer(NewFileHandlerWithDefault("index.html", "dist"))))

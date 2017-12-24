@@ -1,6 +1,6 @@
 import { Injectable }     from '@angular/core';
 import { Http, Response } from '@angular/http';
-import { Station }        from './station';
+import { ElevatorStats }  from './elevator-stats';
 import { Observable }     from 'rxjs/Observable';
 import { combineLatest }  from 'rxjs/observable/combineLatest';
 import 'rxjs/add/operator/publishLast';
@@ -9,42 +9,27 @@ import { SorterUtils } from './sorting';
 import { environment } from '../environments/environment';
 
 @Injectable()
-export class StationService {
-  private stationsUrl = environment.baseUrl + '/app/GetStations/';
-  private stations: Observable<Station[]>;
+export class ElevatorStatsService {
+  private elevatorUrl = environment.baseUrl + '/app/GetElevator/';
 
-  constructor(private http: Http) {
-    this.stations = this.http.get(this.stationsUrl)
+  constructor(private http: Http) {}
+
+  getElevatorStats(nameObservable: Observable<string>): Observable<ElevatorStats[]> {
+    return nameObservable.map(
+        function(name: String) {return this.http.get(this.elevatorUrl + name); })
       .catch(this.handleError)
       .map(this.extractData)
       .publishLast()
       .refCount();
   }
 
-  getStations(): Observable<Station[]> {
-    return this.stations;
-  }
-
-  getStation(nameObservable: Observable<string>): Observable<Station> {
-    return combineLatest(this.getStations(), nameObservable, (stations: Station[], name: string) => {
-      for (let station of stations) {
-        if (station.name === name) {
-          return station;
-        }
-      }
-    });
-  }
-
-  private extractData(res: Response): Station[] {
+  private extractData(res: Response): ElevatorStats[] {
     let body = res.json();
-    if (!body) {
-      return new Array<Station>();
+    let elevatorStats = new Array<ElevatorStats>();
+    for (let elevData of body) {
+      elevatorStats.push(new ElevatorStats(elevData));
     }
-    let stations: Station[] = new Array<Station>();
-    for (let stationData of body) {
-      stations.push(new Station(stationData));
-    }
-    return stations;
+    return elevatorStats;
   }
 
   private handleError(error: Response | any) {
