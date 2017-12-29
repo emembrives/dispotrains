@@ -6,16 +6,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/emembrives/dispotrains/dispotrains.webapp/src/environment"
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
 
 	"github.com/eknkc/dateformat"
 	"github.com/gorilla/mux"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-)
-
-const (
-	mongoDbHost = "localhost"
 )
 
 var (
@@ -56,7 +53,7 @@ func (e *LocElevator) LocalStatusDate() string {
 }
 
 func createSessionOrDie() *mgo.Session {
-	session, err := mgo.Dial(mongoDbHost)
+	session, err := mgo.Dial(environment.GetMongoDbAddress())
 	if err != nil {
 		panic(err)
 	}

@@ -1,6 +1,6 @@
 import { Injectable }     from '@angular/core';
 import { Http, Response } from '@angular/http';
-import { ElevatorStats }  from './elevator-stats';
+import { ElevatorStatistics }  from './elevator-stats';
 import { Observable }     from 'rxjs/Observable';
 import { combineLatest }  from 'rxjs/observable/combineLatest';
 import 'rxjs/add/operator/publishLast';
@@ -10,26 +10,21 @@ import { environment } from '../environments/environment';
 
 @Injectable()
 export class ElevatorStatsService {
-  private elevatorUrl = environment.baseUrl + '/app/GetElevator/';
+  private elevatorUrl = environment.baseUrl + '/app/Elevator/';
 
-  constructor(private http: Http) {}
+  constructor(private _http: Http) {}
 
-  getElevatorStats(nameObservable: Observable<string>): Observable<ElevatorStats[]> {
-    return nameObservable.map(
-        function(name: String) {return this.http.get(this.elevatorUrl + name); })
-      .catch(this.handleError)
-      .map(this.extractData)
-      .publishLast()
-      .refCount();
+  getElevatorStats(nameObservable: Observable<string>): Observable<ElevatorStatistics> {
+    let self = this;
+    return nameObservable.switchMap(function (name) {
+      return self._http.get(self.elevatorUrl + name);
+    }).catch(this.handleError)
+      .map(this.extractData);
   }
 
-  private extractData(res: Response): ElevatorStats[] {
+  private extractData(res: Response): ElevatorStatistics {
     let body = res.json();
-    let elevatorStats = new Array<ElevatorStats>();
-    for (let elevData of body) {
-      elevatorStats.push(new ElevatorStats(elevData));
-    }
-    return elevatorStats;
+    return new ElevatorStatistics(body);
   }
 
   private handleError(error: Response | any) {

@@ -12,6 +12,11 @@ var (
 		"2": "Hors-service",
 		"3": "En travaux",
 		"4": "Perturbation"}
+
+	// UnknownStates lists unknown elevator states that may be ignored.
+	UnknownStates = map[string]bool{
+		"Inconnu ce jour":            true,
+		"Information non disponible": true}
 )
 
 type Elevator struct {

@@ -7,15 +7,12 @@ import (
 
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/assistant"
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/client"
+	"github.com/emembrives/dispotrains/dispotrains.webapp/src/environment"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"gopkg.in/zabawaba99/firego.v1"
-)
-
-const (
-	server = "db"
 )
 
 func uploadToFirebase(session *mgo.Session) error {
@@ -46,7 +43,7 @@ func uploadToFirebase(session *mgo.Session) error {
 }
 
 func main() {
-	session, err := mgo.DialWithTimeout(server, time.Minute)
+	session, err := mgo.DialWithTimeout(environment.GetMongoDbAddress(), time.Minute)
 	if err != nil {
 		panic(err)
 	}

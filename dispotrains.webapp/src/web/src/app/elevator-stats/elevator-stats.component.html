@@ -1,8 +1,26 @@
-<p>
-  <elevator-item [elevator]="(elevator|async)"></elevator-item>
-</p>
-<ul>
-  <li *ngFor="let stat of (stats | async)">
-    {{ elevator.startdate }} - {{ elevator.enddate }} : {{ elevator.state }}
-  </li>
-</ul>
+<titlebar [title]="(elevator | async)?.situation + ' - ' + (station | async)?.displayname + ' - Dispotrains'" [root]="false"></titlebar>
+<mat-list>
+  <elevator-item *ngIf="elevator | async; let elevator" [elevator]="elevator"></elevator-item>
+</mat-list>
+<mat-list *ngIf="stats | async; let stats">
+  <mat-list-item>
+    <div mat-line>
+      <abbr title="Temps médian de défaillence">MTBF</abbr>: {{ toDays(stats.mtbf) | number:'1.0-2' }} jours
+    </div>
+  </mat-list-item>
+  <mat-list-item>
+    <div mat-line>
+      <abbr title="Temps médian de réparation">MTBR</abbr>: {{ toDays(stats.mtbr) | number:'1.0-2' }} jours
+    </div>
+  </mat-list-item>
+  <mat-list-item>
+    <div mat-line>
+      Taux de fonctionnement: {{ workingRatio(stats) | number:'1.0-2' }}%
+    </div>
+  </mat-list-item>
+</mat-list>
+<mat-list *ngIf="stats | async; let stats">
+  <mat-list-item *ngFor="let state of stats.states">
+    {{ state.start | date:'dd/MM/y HH:MM' }} - {{ state.end | date:'dd/MM/y HH:MM' }} : {{ state.state }}
+  </mat-list-item>
+</mat-list>

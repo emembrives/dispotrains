@@ -4,14 +4,11 @@ import (
 	"log"
 	"time"
 
+	"github.com/emembrives/dispotrains/dispotrains.webapp/src/environment"
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
 
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-)
-
-const (
-	server = "db"
 )
 
 type storageStatus struct {
@@ -29,19 +26,22 @@ func newElevatorState(status storageStatus) *storage.ElevatorState {
 	return state
 }
 
+func toUpsertQuery(es *storage.ElevatorState) bson.M {
+	return bson.M{
+		"elevator": es.Elevator,
+		"state":    es.State,
+		"begin":    es.Begin}
+}
+
 func main() {
-	session, err := mgo.Dial(server)
+	session, err := mgo.Dial(environment.GetMongoDbAddress())
 	if err != nil {
 		panic(err)
 	}
 	defer session.Close()
 
 	cStatuses := session.DB("dispotrains").C("statuses")
-	err = cStatuses.EnsureIndexKey("lastupdate")
-	if err != nil {
-		panic(err)
-	}
-	err = cStatuses.EnsureIndexKey("elevator")
+	err = cStatuses.EnsureIndexKey("elevator", "lastupdate")
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +57,7 @@ func main() {
 	for _, elevatorID := range elevators {
 		log.Printf("Processing elevator %s\n", elevatorID)
 		elevatorState := &storage.ElevatorState{}
-		err = cStatistics.Find(bson.M{"elevator": elevatorID}).Sort("-begin").Limit(1).One(elevatorState)
+		err = cStatistics.Find(bson.M{"elevator": elevatorID}).Sort("-end").Limit(1).One(elevatorState)
 		if err != nil && err != mgo.ErrNotFound {
 			panic(err)
 		} else if err == mgo.ErrNotFound {
@@ -65,7 +65,7 @@ func main() {
 		}
 		query := bson.M{"elevator": elevatorID}
 		if elevatorState != nil {
-			query["lastupdate"] = bson.M{"$gte": elevatorState.Begin}
+			query["lastupdate"] = bson.M{"$gt": elevatorState.End}
 		}
 		iter := cStatuses.Find(query).Sort("lastupdate").Iter()
 		var status storageStatus
@@ -78,17 +78,21 @@ func main() {
 				continue
 			}
 			elevatorState.End = status.Lastupdate
-			if status.State != elevatorState.State {
-				cStatistics.Insert(elevatorState)
+			if _, isUnknown := storage.UnknownStates[status.State]; isUnknown {
+				continue
+			}
+			if (status.State == "Disponible") != (elevatorState.State == "Disponible") {
+				cStatistics.Upsert(toUpsertQuery(elevatorState), elevatorState)
 				elevatorState = newElevatorState(status)
 			}
 		}
+		cStatistics.Upsert(toUpsertQuery(elevatorState), elevatorState)
 		if err := iter.Close(); err != nil {
 			panic(err)
 		}
 	}
 
-	err = cStatistics.EnsureIndexKey("elevator")
+	err = cStatistics.EnsureIndexKey("elevator", "end")
 	if err != nil {
 		panic(err)
 	}

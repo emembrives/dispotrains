@@ -17,8 +17,7 @@ export class StationService {
     this.stations = this.http.get(this.stationsUrl)
       .catch(this.handleError)
       .map(this.extractData)
-      .publishLast()
-      .refCount();
+      .share();
   }
 
   getStations(): Observable<Station[]> {

@@ -19,18 +19,18 @@ export class LinesService {
   private findLine(id: string): (lines: Line[]) => Line {
     return function(lines: Line[]) {
       for (let line of lines) {
-        if (line.id == id) {
+        if (line.id === id) {
           return line;
         }
       }
     };
   }
 
-  getLines() : Observable<Line[]> {
+  getLines(): Observable<Line[]> {
     return this.stationService.getStations().map(this.stationToLines);
   }
 
-  private stationToLines(stations: Station[]) : Line[] {
+  private stationToLines(stations: Station[]): Line[] {
     let lineMap: Map<string, Line> = new Map<string, Line>();
     for (let station of stations) {
         for (let line of station.lines) {
@@ -44,7 +44,7 @@ export class LinesService {
     return lines;
   }
 
-  getStationsForLine(line: Observable<Line>) : Observable<Station[]> {
+  getStationsForLine(line: Observable<Line>): Observable<Station[]> {
     return combineLatest(this.stationService.getStations(), line, this.findStations);
   }
 

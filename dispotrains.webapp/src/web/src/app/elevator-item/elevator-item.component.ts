@@ -13,11 +13,17 @@ export class ElevatorItemComponent {
 
   constructor() { }
 
-  isBroken() : boolean {
+  isBroken(): boolean {
+    if (this.elevator === null) {
+      return false;
+    }
     return !this.elevator.available();
   }
 
-  hasForecast() : boolean {
-    return this.elevator.status.forecast != undefined
+  hasForecast(): boolean {
+    if (this.elevator === null) {
+      return false;
+    }
+    return this.elevator.status.forecast !== null;
   }
 }
