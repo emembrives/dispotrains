@@ -4,6 +4,10 @@
 
 span.title {
   padding-left: 10px;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 a {
