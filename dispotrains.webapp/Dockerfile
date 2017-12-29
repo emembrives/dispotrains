@@ -4,6 +4,8 @@ MAINTAINER Etienne J. Membrives <etienne@membrives.fr>
 ENV TZ Europe/Paris
 RUN cp /usr/share/zoneinfo/Europe/Paris /etc/localtime
 
+COPY docker/etc/apt /etc/apt
+
 RUN apt-get update
 RUN apt-get dist-upgrade -y
 RUN apt-get update
