@@ -13,6 +13,7 @@ RUN apt-get install -y --no-install-recommends golang-go \
                      git tar bzip2 \
                      mongodb-clients \
                      cron supervisor
+RUN apt-get install -t stretch-backports -y --no-install-recommends golang-go
 
 COPY docker/etc /etc
 RUN chmod 0644 /etc/crontab
