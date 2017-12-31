@@ -6,12 +6,12 @@
   <h2 mat-subheader>Statistiques</h2>
   <mat-list-item>
     <div mat-line>
-      <abbr title="Temps médian de défaillence">MTBF</abbr>: {{ toDays(stats.mtbf) | number:'1.0-2' }} jours
+      Temps moyen avant panne: {{ toDays(stats.mtbf) | number:'1.0-2' }} jours
     </div>
   </mat-list-item>
   <mat-list-item>
     <div mat-line>
-      <abbr title="Temps médian de réparation">MTBR</abbr>: {{ toDays(stats.mtbr) | number:'1.0-2' }} jours
+      Temps moyen de réparation: {{ toDays(stats.mtbr) | number:'1.0-2' }} jours
     </div>
   </mat-list-item>
   <mat-list-item>
