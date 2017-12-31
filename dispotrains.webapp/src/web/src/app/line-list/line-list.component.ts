@@ -15,7 +15,7 @@ import { Line } from '../station';
   styleUrls: ['./line-list.component.css'],
 })
 export class LineListComponent implements OnInit {
-  lines: Observable<Line[]>;
+  lines: Promise<Line[]>;
 
   constructor(private linesService: LinesService) { }
 

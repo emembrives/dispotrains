@@ -10,10 +10,10 @@ import { SorterUtils } from './sorting';
 export class LinesService {
   constructor(private stationService: StationService) {}
 
-  getLine(id: string): Observable<Line> {
+  getLine(id: string): Promise<Line> {
     return this.stationService.getStations()
-      .map(this.stationToLines)
-      .map(this.findLine(id));
+      .then(this.stationToLines)
+      .then(this.findLine(id));
   }
 
   private findLine(id: string): (lines: Line[]) => Line {
@@ -26,8 +26,8 @@ export class LinesService {
     };
   }
 
-  getLines(): Observable<Line[]> {
-    return this.stationService.getStations().map(this.stationToLines);
+  getLines(): Promise<Line[]> {
+    return this.stationService.getStations().then(this.stationToLines);
   }
 
   private stationToLines(stations: Station[]): Line[] {

@@ -11,16 +11,16 @@ import { environment } from '../environments/environment';
 @Injectable()
 export class StationService {
   private stationsUrl = environment.baseUrl + '/app/GetStations/';
-  private stations: Observable<Station[]>;
+  private stations: Promise<Station[]>;
 
   constructor(private http: Http) {
     this.stations = this.http.get(this.stationsUrl)
       .catch(this.handleError)
       .map(this.extractData)
-      .share();
+      .toPromise();
   }
 
-  getStations(): Observable<Station[]> {
+  getStations(): Promise<Station[]> {
     return this.stations;
   }
 
