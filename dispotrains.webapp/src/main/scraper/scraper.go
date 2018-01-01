@@ -8,6 +8,7 @@ import (
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/assistant"
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/client"
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/environment"
+	"github.com/emembrives/dispotrains/dispotrains.webapp/src/statistics"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	mgo "gopkg.in/mgo.v2"
@@ -131,4 +132,8 @@ func main() {
 		panic(err)
 	}
 	assistant.UpdateStationList(stations)
+	err = statistics.ComputeElevatorStatistics(session)
+	if err != nil {
+		panic(err)
+	}
 }

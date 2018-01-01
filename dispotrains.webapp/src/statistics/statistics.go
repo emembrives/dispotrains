@@ -1,10 +1,9 @@
-package main
+package statistics
 
 import (
 	"log"
 	"time"
 
-	"github.com/emembrives/dispotrains/dispotrains.webapp/src/environment"
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
 
 	mgo "gopkg.in/mgo.v2"
@@ -33,23 +32,18 @@ func toUpsertQuery(es *storage.ElevatorState) bson.M {
 		"begin":    es.Begin}
 }
 
-func main() {
-	session, err := mgo.Dial(environment.GetMongoDbAddress())
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-
+// ComputeElevatorStatistics computes and stores per-elevator statistics.
+func ComputeElevatorStatistics(session *mgo.Session) error {
 	cStatuses := session.DB("dispotrains").C("statuses")
-	err = cStatuses.EnsureIndexKey("elevator", "lastupdate")
+	err := cStatuses.EnsureIndexKey("elevator", "lastupdate")
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	var elevators []string
 	err = cStatuses.Find(nil).Select(bson.M{"elevator": 1}).Distinct("elevator", &elevators)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	cStatistics := session.DB("dispotrains").C("statistics")
@@ -59,7 +53,7 @@ func main() {
 		elevatorState := &storage.ElevatorState{}
 		err = cStatistics.Find(bson.M{"elevator": elevatorID}).Sort("-end").Limit(1).One(elevatorState)
 		if err != nil && err != mgo.ErrNotFound {
-			panic(err)
+			return err
 		} else if err == mgo.ErrNotFound {
 			elevatorState = nil
 		}
@@ -87,13 +81,28 @@ func main() {
 			}
 		}
 		cStatistics.Upsert(toUpsertQuery(elevatorState), elevatorState)
-		if err := iter.Close(); err != nil {
-			panic(err)
+		if err = iter.Close(); err != nil {
+			return err
 		}
 	}
 
 	err = cStatistics.EnsureIndexKey("elevator", "end")
-	if err != nil {
-		panic(err)
-	}
+	return err
+}
+
+func ComputeGlobalStatistics(session *mgo.Session) error {
+	cStatistics := session.DB("dispotrains").C("statistics")
+	results := make([]bson.M, 0)
+	pipe := cStatistics.Pipe(
+		[]bson.M{
+			bson.M{"$sort": bson.M{"end": 1}},
+			bson.M{"$group": bson.M{
+				"_id":   "$elevator",
+				"state": bson.M{"$last": "$state"},
+				"time":  bson.M{"$last": "$end"}}},
+			bson.M{"$match": bson.M{"time": bson.M{"$gte": time.Now().AddDate(0, 0, -2)}}},
+		},
+	)
+	err := pipe.All(results)
+	return err
 }
