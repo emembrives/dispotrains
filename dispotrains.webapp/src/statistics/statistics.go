@@ -17,8 +17,8 @@ type storageStatus struct {
 }
 
 type NetworkStats struct {
-	Good int
-	Bad int
+	Good    int
+	Bad     int
 	LongBad int
 }
 
@@ -101,7 +101,7 @@ func ComputeGlobalStatistics(session *mgo.Session) (*NetworkStats, error) {
 	results := make([]bson.M, 0)
 	pipe := cStatistics.Pipe(
 		[]bson.M{
-			bson.M{"$match": bson.M{"end": bson.M{"$gte": time.Now().AddDate(0, 0, -2)}}},
+			bson.M{"$match": bson.M{"end": bson.M{"$gte": time.Now().AddDate(0, 0, -10)}}},
 			bson.M{"$sort": bson.M{"end": 1}},
 			bson.M{"$group": bson.M{
 				"_id":   "$elevator",
@@ -124,10 +124,9 @@ func ComputeGlobalStatistics(session *mgo.Session) (*NetworkStats, error) {
 			if !ok {
 				panic(elevator["begin"])
 			}
+			ns.Bad++
 			if beginTime.Before(longLimit) {
 				ns.LongBad++
-			} else {
-				ns.Bad++
 			}
 		}
 	}

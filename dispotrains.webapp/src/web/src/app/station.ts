@@ -8,6 +8,14 @@ export class NetworkStats {
     this.bad = data['Bad'];
     this.longBad = data['LongBad'];
   }
+
+  PercentBad(): number {
+    return (this.bad * 100) / (this.good + this.bad);
+  }
+
+  PercentLongBad(): number {
+    return (this.longBad * 100) / (this.good + this.bad);
+  }
 }
 
 export class Line {

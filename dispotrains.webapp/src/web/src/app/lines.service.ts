@@ -3,7 +3,7 @@ import { Observable } from 'rxjs/Observable';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 
 import { StationService } from './station.service';
-import { Line, Station } from './station';
+import { Line, Station, NetworkStats } from './station';
 import { SorterUtils } from './sorting';
 
 @Injectable()
@@ -14,6 +14,10 @@ export class LinesService {
     return this.stationService.getStations()
       .then(this.stationToLines)
       .then(this.findLine(id));
+  }
+
+  getStats(): Promise<NetworkStats> {
+    return this.stationService.getStats();
   }
 
   private findLine(id: string): (lines: Line[]) => Line {

@@ -6,7 +6,7 @@ import { Observable }     from 'rxjs/Observable';
 
 import { LinesService } from '../lines.service';
 import { StationService } from '../station.service';
-import { Line } from '../station';
+import { Line, NetworkStats } from '../station';
 
 
 @Component({
@@ -16,14 +16,12 @@ import { Line } from '../station';
 })
 export class LineListComponent implements OnInit {
   lines: Promise<Line[]>;
+  stats: Promise<NetworkStats>;
 
   constructor(private linesService: LinesService) { }
 
   ngOnInit(): void {
     this.lines = this.linesService.getLines();
-  }
-
-  gotoDetail(line: Line): void {
-
+    this.stats = this.linesService.getStats();
   }
 }
