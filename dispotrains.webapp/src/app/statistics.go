@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
+	"github.com/emembrives/dispotrains/dispotrains.webapp/src/statistics"
 	"github.com/gorilla/mux"
 
 	"gopkg.in/mgo.v2/bson"
@@ -69,6 +70,20 @@ func ElevatorHandler(w http.ResponseWriter, req *http.Request) {
 	out.Broken = brokenTime
 	out.Total = totalTime
 	out.States = stats[0:min(len(stats), 30)]
+	if err := json.NewEncoder(w).Encode(&out); err != nil {
+		log.Println(err)
+	}
+}
+
+func NetworkStatsHandler(w http.ResponseWriter, req *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	w.Header().Add("Access-Control-Allow-Methods", "GET")
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+
+	out, err := statistics.ComputeGlobalStatistics(session)
+	if err != nil {
+		panic(err)
+	}
 	if err := json.NewEncoder(w).Encode(&out); err != nil {
 		log.Println(err)
 	}

@@ -1,3 +1,15 @@
+export class NetworkStats {
+  good: number;
+  bad: number;
+  longBad: number;
+
+  constructor(data: Object) {
+    this.good = data['Good'];
+    this.bad = data['Bad'];
+    this.longBad = data['LongBad'];
+  }
+}
+
 export class Line {
   network: string;
   id: string;

@@ -1,6 +1,6 @@
 import { Injectable }     from '@angular/core';
 import { Http, Response } from '@angular/http';
-import { Station }        from './station';
+import { Station, NetworkStats }        from './station';
 import { Observable }     from 'rxjs/Observable';
 import { combineLatest }  from 'rxjs/observable/combineLatest';
 import 'rxjs/add/operator/publishLast';
@@ -11,13 +11,23 @@ import { environment } from '../environments/environment';
 @Injectable()
 export class StationService {
   private stationsUrl = environment.baseUrl + '/app/GetStations/';
+  private statsUrl = environment.baseUrl + '/app/netStats/';
   private stations: Promise<Station[]>;
+  private stats: Promise<NetworkStats>;
 
   constructor(private http: Http) {
     this.stations = this.http.get(this.stationsUrl)
       .catch(this.handleError)
       .map(this.extractData)
       .toPromise();
+   this.stats = this.http.get(this.statsUrl)
+      .catch(this.handleError)
+      .map(this.extractStatsData)
+      .toPromise();
+  }
+
+  getStats(): Promise<NetworkStats> {
+    return this.stats;
   }
 
   getStations(): Promise<Station[]> {
@@ -44,6 +54,11 @@ export class StationService {
       stations.push(new Station(stationData));
     }
     return stations;
+  }
+
+  private extractStatsData(res: Response): NetworkStats {
+    let body = res.json();
+    return new NetworkStats(body);
   }
 
   private handleError(error: Response | any) {

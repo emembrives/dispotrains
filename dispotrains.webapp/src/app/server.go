@@ -145,6 +145,7 @@ func main() {
 	r.HandleFunc("/app/AllStats/", VoronoiHandler)
 	r.HandleFunc("/app/Elevator/{id}", ElevatorHandler)
 	r.HandleFunc("/app/fulfillment/", FulfillmentHandler)
+	r.HandleFunc("/app/netStats/", NetworkStatsHandler)
 	r.PathPrefix("/static/").Handler(CacheRequest(http.StripPrefix("/static/", http.FileServer(http.Dir("static")))))
 	r.PathPrefix("/").Handler(CacheRequest(http.FileServer(NewFileHandlerWithDefault("index.html", "dist"))))
 	http.Handle("/", r)

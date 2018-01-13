@@ -11,7 +11,7 @@ RUN apt-get dist-upgrade -y
 RUN apt-get update
 RUN apt-get install -y --no-install-recommends golang-go \
                      git tar bzip2 \
-                     mongodb-clients \
+                     mongodb-clients mongo-tools \
                      cron supervisor
 RUN apt-get install -t stretch-backports -y --no-install-recommends golang-go
 

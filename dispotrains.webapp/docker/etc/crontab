@@ -7,4 +7,3 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 */3 8 * * * root cd /dispotrains/build && /dispotrains/build/scraper --prod 2>&1 >> /var/log/scraper.log
 */7 * * * *          root cd /dispotrains/build && /dispotrains/build/scraper --prod 2>&1 >> /var/log/scraper.log
 43 4 * * *         root cd /dispotrains/build && /dispotrains/build/db_dump.sh 2>&1 >> /var/log/dump.log
-45 */4 * * *         root cd /dispotrains/build && /dispotrains/build/statistics --prod 2>&1 >> /var/log/statistics.log

@@ -16,6 +16,12 @@ type storageStatus struct {
 	Lastupdate time.Time
 }
 
+type NetworkStats struct {
+	Good int
+	Bad int
+	LongBad int
+}
+
 func newElevatorState(status storageStatus) *storage.ElevatorState {
 	state := &storage.ElevatorState{}
 	state.Elevator = status.Elevator
@@ -90,19 +96,40 @@ func ComputeElevatorStatistics(session *mgo.Session) error {
 	return err
 }
 
-func ComputeGlobalStatistics(session *mgo.Session) error {
+func ComputeGlobalStatistics(session *mgo.Session) (*NetworkStats, error) {
 	cStatistics := session.DB("dispotrains").C("statistics")
 	results := make([]bson.M, 0)
 	pipe := cStatistics.Pipe(
 		[]bson.M{
+			bson.M{"$match": bson.M{"end": bson.M{"$gte": time.Now().AddDate(0, 0, -2)}}},
 			bson.M{"$sort": bson.M{"end": 1}},
 			bson.M{"$group": bson.M{
 				"_id":   "$elevator",
 				"state": bson.M{"$last": "$state"},
-				"time":  bson.M{"$last": "$end"}}},
-			bson.M{"$match": bson.M{"time": bson.M{"$gte": time.Now().AddDate(0, 0, -2)}}},
+				"begin": bson.M{"$last": "$begin"},
+				"end":   bson.M{"$last": "$end"}}},
 		},
 	)
-	err := pipe.All(results)
-	return err
+	err := pipe.All(&results)
+	if err != nil {
+		return nil, err
+	}
+	ns := NetworkStats{}
+	longLimit := time.Now().AddDate(0, 0, -3)
+	for _, elevator := range results {
+		if elevator["state"] == "Disponible" {
+			ns.Good++
+		} else {
+			beginTime, ok := elevator["begin"].(time.Time)
+			if !ok {
+				panic(elevator["begin"])
+			}
+			if beginTime.Before(longLimit) {
+				ns.LongBad++
+			} else {
+				ns.Bad++
+			}
+		}
+	}
+	return &ns, nil
 }
