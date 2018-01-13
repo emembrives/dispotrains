@@ -1,7 +1,7 @@
 <titlebar [title]="'DispoTrains'" [root]="true"></titlebar>
 <mat-card>
   <mat-card-content>
-    {{ (stats|async).good }} ascenseurs en service;
+    {{ (stats|async).good }} ascenseurs en service ;
     {{ (stats|async).bad }} ({{ (stats|async).PercentBad() | number:'1.0-0' }}%) en panne dont 
     {{ (stats|async).longBad }} ({{ (stats|async).PercentLongBad() | number:'1.0-0' }}%) depuis 3 jours ou plus.
   </mat-card-content>
