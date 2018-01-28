@@ -1,4 +1,4 @@
-all: app scraper
+all: app scraper test
 
 app: _go_deps _js_deps _ln_deps
 	go build -o ../build/server ./app/*.go
@@ -17,4 +17,7 @@ scraper: _go_deps
 	go build -o ../build/scraper ./main/scraper/*.go
 
 _go_deps:
-	go get ./...
+	go get -u ./...
+
+test: _go_deps
+	go test ./...
