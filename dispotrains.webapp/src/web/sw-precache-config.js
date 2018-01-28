@@ -1,4 +1,5 @@
 module.exports = {
+  navigateFallback : '/index.html',
   stripPrefix : 'dist',
   root : 'dist/',
   staticFileGlobs :
@@ -7,5 +8,9 @@ module.exports = {
   runtimeCaching : [ {
     urlPattern : /^https:\/\/dispotrains\.membrives\.fr\/app\/.*/,
     handler : 'networkFirst'
-  } ]
+  },
+  {
+    urlPattern : /^https:\/\/dispotrains\.membrives\.fr\/static\/data\/.*/,
+    handler : 'networkOnly'
+  }]
 };
