@@ -1,32 +1,14 @@
-language: android
+sudo: required
 
-android:
-  components:
-    # Uncomment the lines below if you want to
-    # use the latest revision of Android SDK Tools
-    - platform-tools
-    - tools
+env:
+  - DOCKER_COMPOSE_VERSION=1.7.1
 
-    # The BuildTools version used by your project
-    - build-tools-23.0.2
-
-    # The SDK version used to compile your project
-    - android-23
-
-    # Additional components
-    - extra-google-google_play_services
-    - extra-google-m2repository
-    - extra-android-m2repository
-    - addon-google_apis-google-23
-    - extra-android-support
-
-before_script:
-    - gimme 1.7
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
 
 script:
-    # Android
-    - pushd Dispotrains
-    - ./gradlew build connectedCheck
-    - popd
-    # Go
-    - ./build.go.sh
+    - pushd dispotrains.webapp
+    - docker-compose build
