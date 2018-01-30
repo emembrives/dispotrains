@@ -3,12 +3,12 @@
   "short_name": "Dispotrains",
   "icons": [
 		{
-			"src": "icons/logo_64.png",
+			"src": "assets/logo_64.png",
 			"sizes": "64x64",
 			"type": "image/png"
 		},
 		{
-			"src": "icons/logo_512.png",
+			"src": "assets/logo_512.png",
 			"sizes": "512x512",
 			"type": "image/png"
 		}

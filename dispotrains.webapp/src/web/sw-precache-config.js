@@ -12,5 +12,9 @@ module.exports = {
   {
     urlPattern : /^https:\/\/dispotrains\.membrives\.fr\/static\/data\/.*/,
     handler : 'networkOnly'
+  },
+  {
+    urlPattern : /^https:\/\/dispotrains\.membrives\.fr\/assets\/.*/,
+    handler : 'networkFirst'
   }]
 };

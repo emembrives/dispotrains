@@ -1,7 +1,7 @@
 <mat-toolbar color="primary" class="mat-elevation-z6" role="header">
   <span>
     <a *ngIf="hasBack()" color="primary" mat-mini-fab (click)="goBack()"  title="Retour" role="button"><mat-icon>arrow_back</mat-icon></a>
-    <a *ngIf="!hasBack()" color="primary" mat-mini-fab [routerLink]="['/lignes']"  title="Retour" role="button"><mat-icon>arrow_back</mat-icon></a>
+    <a *ngIf="!hasBack()" color="primary" mat-mini-fab [routerLink]="['/lignes']"  title="Retour" role="button"><mat-icon>home</mat-icon></a>
   </span>
   <span class="title"><h1>{{ title }}</h1></span>
   <span id="autofill"></span>
