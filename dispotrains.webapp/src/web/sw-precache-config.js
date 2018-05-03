@@ -8,5 +8,9 @@ module.exports = {
   runtimeCaching : [ {
     urlPattern : "/app/:command/",
     handler : 'networkFirst'
+  },
+  {
+    urlPattern : /^https:\/\/dispotrains\.membrives\.fr\/app\/.*/,
+    handler : 'networkFirst'
   }]
 };
