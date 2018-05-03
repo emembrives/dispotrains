@@ -82,12 +82,12 @@ func FulfillmentHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	stationName, ok := parameters["station"].(string)
 	if !ok {
-		log.Println("Error decoding station: %v\n", parameters["station"])
+		log.Printf("Error decoding station: %v\n", parameters["station"])
 		return
 	}
 	var station storage.Station
 	if err := c.Find(bson.M{"name": stationName}).One(&station); err != nil {
-		log.Println("Station %s not found: %v", stationName, err)
+		log.Printf("Station %s not found: %v", stationName, err)
 		return
 	}
 	response := webhookResponse{}
