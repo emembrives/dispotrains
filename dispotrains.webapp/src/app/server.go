@@ -53,9 +53,10 @@ func (e *LocElevator) LocalStatusDate() string {
 }
 
 func createSessionOrDie() *mgo.Session {
-	session, err := mgo.Dial(environment.GetMongoDbAddress())
+	dbAddress := environment.GetMongoDbAddress()
+	session, err := mgo.Dial(dbAddress)
 	if err != nil {
-		panic(err)
+		log.Panicf("Unable to connect to '%s': %v", dbAddress, err)
 	}
 	return session
 }

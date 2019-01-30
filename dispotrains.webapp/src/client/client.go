@@ -172,6 +172,9 @@ func (parser *parser) parseElevator(
 		elevatorDirection)
 
 	// Status
+	if elevatorData["stateUpdate"] == nil {
+		return elevator, nil
+	}
 	if _, ok := elevatorData["stateUpdate"]; !ok {
 		return elevator, nil
 	}
@@ -194,11 +197,13 @@ func (parser *parser) parseElevator(
 	}
 	forecastStr := ""
 	if _, ok = elevatorData["stateEndPrevision"]; ok {
-		forecastStr, ok = elevatorData["stateEndPrevision"].(string)
-		if !ok {
-			return nil, fmt.Errorf(
-				"elevatorData[\"stateEndPrevision\"]=%+v not a string for elevator %s",
-				elevatorData["stateEndPrevision"], elevator.ID)
+		if elevatorData["stateEndPrevision"] != nil {
+			forecastStr, ok = elevatorData["stateEndPrevision"].(string)
+			if !ok {
+				return nil, fmt.Errorf(
+					"elevatorData[\"stateEndPrevision\"]=%+v not a string for elevator %s",
+					elevatorData["stateEndPrevision"], elevator.ID)
+			}
 		}
 	}
 	elevator.NewViaNavigoStatus(state, stateUpdate, forecastStr)
