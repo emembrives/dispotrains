@@ -1,4 +1,4 @@
-FROM node:9-stretch
+FROM node:11-stretch
 MAINTAINER Etienne J. Membrives <etienne@membrives.fr>
 
 ENV TZ Europe/Paris

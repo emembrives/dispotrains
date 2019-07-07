@@ -1,7 +1,7 @@
 version: '2'
 services:
   db:
-    image: mongo
+    image: mongo:4.0
     volumes:
       - /var/lib/mongodb:/data/db
   dispotrains:
