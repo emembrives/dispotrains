@@ -4,6 +4,7 @@ services:
     image: mongo:4.2
     volumes:
       - /var/lib/mongodb:/data/db
+    restart: unless-stopped
   dispotrains:
     build: .
     command: /usr/bin/supervisord
@@ -14,3 +15,4 @@ services:
     volumes:
       - /home/web/dispotrains/key:/dispotrains/key
       - /home/web/dispotrains/data:/dispotrains/build/static/data
+    restart: unless-stopped
