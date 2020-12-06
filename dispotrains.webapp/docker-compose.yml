@@ -5,6 +5,8 @@ services:
     volumes:
       - /var/lib/mongodb:/data/db
     restart: unless-stopped
+    networks:
+      dispotrains_net:
   dispotrains:
     build: .
     command: /usr/bin/supervisord
@@ -16,3 +18,8 @@ services:
       - /home/web/dispotrains/key:/dispotrains/key
       - /home/web/dispotrains/data:/dispotrains/build/static/data
     restart: unless-stopped
+    networks:
+      dispotrains_net:
+networks:
+  dispotrains_net:
+    driver: bridge

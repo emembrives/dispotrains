@@ -150,7 +150,7 @@ func (parser *parser) parseElevator(
 			"elevatorData[\"label\"]=%+v not a string", elevatorData["label"])
 	}
 	var elevatorSituation string
-	if _, ok = elevatorData["situation"]; ok {
+	if v, ok := elevatorData["situation"]; ok && v != nil {
 		elevatorSituation, ok = elevatorData["situation"].(string)
 		if !ok {
 			return nil, fmt.Errorf(
@@ -159,7 +159,7 @@ func (parser *parser) parseElevator(
 		}
 	}
 	var elevatorDirection string
-	if _, ok = elevatorData["direction"]; ok {
+	if v, ok := elevatorData["direction"]; ok && v != nil {
 		elevatorDirection, ok = elevatorData["direction"].(string)
 		if !ok {
 			return nil, fmt.Errorf(
