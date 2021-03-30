@@ -1,4 +1,4 @@
-FROM node:13-buster
+FROM node:15-buster
 MAINTAINER Etienne J. Membrives <etienne@membrives.fr>
 
 ENV TZ Europe/Paris
