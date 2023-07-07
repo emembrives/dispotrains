@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/statistics"
+	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
 	"github.com/gorilla/mux"
-
-	"gopkg.in/mgo.v2/bson"
+	"github.com/linxGnu/grocksdb"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 type outStats struct {
@@ -18,7 +18,7 @@ type outStats struct {
 	Mtbr   time.Duration
 	Broken time.Duration
 	Total  time.Duration
-	States []storage.ElevatorState
+	States []*storage.ElevatorState
 }
 
 func min(x, y int) int {
@@ -37,13 +37,27 @@ func ElevatorHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	elevatorID := vars["id"]
 
-	cStatistics := session.DB("dispotrains").C("statistics")
+	ro := grocksdb.NewDefaultReadOptions()
+	defer ro.Destroy()
 
-	stats := make([]storage.ElevatorState, 0)
+	iterator := session.NewIterator(ro)
+	defer iterator.Close()
+
+	stats := make([]*storage.ElevatorState, 0)
 	datetime := time.Now().AddDate(-2, 0, 0)
-	if err := cStatistics.Find(bson.M{"elevator": elevatorID, "end": bson.M{"$gt": datetime}}).Sort("-begin").All(&stats); err != nil {
-		log.Println(err)
+
+	for iterator.SeekForPrev(storage.LastKeyOfBucket(storage.BucketStatistics, elevatorID)); iterator.ValidForPrefix(storage.MakeKey(storage.BucketStatistics, elevatorID)); iterator.Prev() {
+		var state storage.ElevatorState
+		err := msgpack.Unmarshal(iterator.Value().Data(), &state)
+		if err != nil {
+			log.Panic(err)
+		}
+		if state.End.Before(datetime) {
+			break
+		}
+		stats = append(stats, &state)
 	}
+
 	var availableTime, brokenTime, totalTime time.Duration
 	var availablePeriods, brokenPeriods int
 	for _, stat := range stats {
@@ -71,7 +85,7 @@ func ElevatorHandler(w http.ResponseWriter, req *http.Request) {
 	out.Total = totalTime
 	out.States = stats[0:min(len(stats), 30)]
 	if err := json.NewEncoder(w).Encode(&out); err != nil {
-		log.Println(err)
+		log.Panic(err)
 	}
 }
 
@@ -82,9 +96,9 @@ func NetworkStatsHandler(w http.ResponseWriter, req *http.Request) {
 
 	out, err := statistics.ComputeGlobalStatistics(session)
 	if err != nil {
-		panic(err)
+		log.Panic(err)
 	}
 	if err := json.NewEncoder(w).Encode(&out); err != nil {
-		log.Println(err)
+		log.Panic(err)
 	}
 }

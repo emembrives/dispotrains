@@ -1,23 +1,26 @@
-all: app scraper test
+all: app test
 
-app: _go_deps _js_deps _ln_deps
+app: server js _cp_deps
+
+server: _go_deps
 	go build -o ../build/server ./app/*.go
 
-_js_deps:
-	cd web && npm update && npm install && node_modules/@angular/cli/bin/ng build --prod --aot && npm run sw
+js:
+	$(MAKE) -C web.v2 all
 
-_ln_deps:
+_cp_deps: js
 	mkdir -p ../build/
 	mkdir -p ../build/static
-	ln -s ../src/web/dist ../build/
-	ln -s ../src/scripts/db_dump.sh ../build/
-	ln -s ../src/analysis/stations-coordinates.csv ../build/
-
-scraper: _go_deps
-	go build -o ../build/scraper ./main/scraper/*.go
+	cp -r ../src/web.v2/dist/web.v2 ../build/
+	cp -r ../src/scripts/db_dump.sh ../build/
+	cp -r ../src/analysis/stations-coordinates.csv ../build/
 
 _go_deps:
 	go get ./...
 
 test: _go_deps
 	go test ./...
+
+clean:
+	rm -rf ../build
+	$(MAKE) -C web.v2 clean

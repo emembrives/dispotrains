@@ -20,11 +20,11 @@ var (
 )
 
 type Elevator struct {
-	ID        string
-	Situation string
-	Direction string
+	ID        string `json:"id"`
+	Situation string `json:"situation"`
+	Direction string `json:"direction"`
 	station   *Station
-	Status    *Status
+	Status    *Status `json:"status"`
 }
 
 func (elevator *Elevator) GetStation() *Station {
@@ -65,6 +65,12 @@ func (elevator *Elevator) NewViaNavigoStatus(state string, updateStr string, for
 			return nil, err
 		}
 		status.Forecast = &forecast
+	} else if strings.Contains(state, " jusqu'au ") {
+		forecastStr := state[len(state)-10:]
+		t, err := time.Parse("02/01/2006", forecastStr)
+		if err == nil {
+			status.Forecast = &t
+		}
 	}
 	return status, nil
 }

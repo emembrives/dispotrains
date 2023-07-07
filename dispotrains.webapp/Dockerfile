@@ -1,36 +1,26 @@
-FROM node:15-buster
-MAINTAINER Etienne J. Membrives <etienne@membrives.fr>
+FROM node:20-bookworm AS builder
 
-ENV TZ Europe/Paris
-RUN cp /usr/share/zoneinfo/Europe/Paris /etc/localtime
-
-COPY docker/etc/apt /etc/apt
-
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends wget gnupg
-RUN sh -c 'wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add -'
-
-COPY docker/etc/mongodb/mongodb.list /etc/apt/sources.list.d/mongodb.list
-
-RUN apt-get update
-RUN apt-get dist-upgrade -y
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends golang-go \
-                     git tar bzip2 \
-                     cron supervisor \
-                     mongodb-org-shell mongodb-org-tools
-RUN apt-get install -t buster-backports -y --no-install-recommends golang-go
-
-COPY docker/etc /etc
-RUN chmod 0644 /etc/crontab
-COPY docker/scripts /scripts
+RUN apt update
+RUN apt full-upgrade -y
+RUN apt update
+RUN apt install -y --no-install-recommends golang-go librocksdb-dev
 
 ENV GOPATH /go
 COPY src /go/src/github.com/emembrives/dispotrains/dispotrains.webapp/src
 WORKDIR /go/src/github.com/emembrives/dispotrains/dispotrains.webapp/src/
 RUN make
-RUN ln -s /go/src/github.com/emembrives/dispotrains/dispotrains.webapp/ /dispotrains
+
+FROM bitnami/minideb:latest AS runner
+ENV TZ Europe/Paris
+RUN cp /usr/share/zoneinfo/Europe/Paris /etc/localtime
+RUN install_packages librocksdb7.8 supervisor curl cron ca-certificates
+
+COPY --from=builder /go/src/github.com/emembrives/dispotrains/dispotrains.webapp/build /dispotrains
+
+COPY docker/etc /etc
+RUN chmod 0644 /etc/crontab
+COPY docker/scripts /scripts
 
 EXPOSE 9000
-WORKDIR /dispotrains/build/
+WORKDIR /dispotrains/
 CMD ["/usr/bin/supervisord"]

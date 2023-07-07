@@ -11,16 +11,16 @@ type Coordinates struct {
 }
 
 type Station struct {
-	DisplayName  string
-	Name         string
-	City         string
-	Position     Coordinates
-	OsmID        string
-	Lines        []*Line
-	Elevators    []*Elevator
-	Code         string
-	HasElevators bool
-	LastUpdate   time.Time
+	DisplayName  string      `json:"displayname"`
+	Name         string      `json:"name"`
+	City         string      `json:"city"`
+	Position     Coordinates `json:"position"`
+	OsmID        string      `json:"osmid"`
+	Lines        []*Line     `json:"lines"`
+	Elevators    []*Elevator `json:"elevators"`
+	Code         string      `json:"code"`
+	HasElevators bool        `json:"haselevators"`
+	LastUpdate   time.Time   `json:"lastupdate"`
 }
 
 func NewStation(name, city, code string) *Station {

@@ -1,0 +1,12 @@
+/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.bg-initial {
+    background-color: initial;
+}
+
+.text-initial {
+    color: initial;
+}

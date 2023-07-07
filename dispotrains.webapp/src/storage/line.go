@@ -6,11 +6,11 @@ import (
 )
 
 type Line struct {
-	Network    string
-	ID         string
+	Network    string `json:"network"`
+	ID         string `json:"id"`
 	code       string
 	stations   []*Station
-	LastUpdate time.Time
+	LastUpdate time.Time `json:"lastupdate"`
 }
 
 func (line *Line) attachStation(station *Station) {

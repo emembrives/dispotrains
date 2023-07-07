@@ -1,22 +1,14 @@
 version: '2'
 services:
-  db:
-    image: mongo:4.4
-    volumes:
-      - /var/lib/mongodb:/data/db
-    restart: unless-stopped
-    networks:
-      dispotrains_net:
   dispotrains:
     build: .
     command: /usr/bin/supervisord
     ports:
       - "9000:9000"
-    links:
-      - db
     volumes:
       - /home/web/dispotrains/key:/dispotrains/key
-      - /home/web/dispotrains/data:/dispotrains/build/static/data
+      - /home/web/dispotrains/data:/dispotrains/static/data
+      - /home/web/dispotrains/db:/dispotrains/db
     restart: unless-stopped
     networks:
       dispotrains_net:

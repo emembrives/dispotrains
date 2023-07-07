@@ -1,6 +1,0 @@
-<titlebar [title]="(station | async)?.displayname + ' - Dispotrains'" [root]="false"></titlebar>
-<mat-nav-list>
-  <a *ngFor="let elevator of (station | async)?.elevators" [routerLink]="['/gare', (station | async)?.name, 'stats', elevator.id]">
-    <elevator-item [elevator]=elevator></elevator-item>
-  </a>
-</mat-nav-list>

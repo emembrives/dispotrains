@@ -3,8 +3,8 @@ package storage
 import "time"
 
 type ElevatorState struct {
-	Elevator string
-	State    string
-	Begin    time.Time
-	End      time.Time
+	Elevator string    `json:"elevator"`
+	State    string    `json:"state"`
+	Begin    time.Time `json:"begin"`
+	End      time.Time `json:"end"`
 }

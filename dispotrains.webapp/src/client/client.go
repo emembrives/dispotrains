@@ -22,7 +22,7 @@ func newParser() *parser {
 
 func GetAndParseLines() ([]*storage.Line, []*storage.Station, error) {
 	req, err := http.NewRequest("GET",
-		"https://api.vianavigo.com/elevatorsInfo", nil)
+		"https://api-iv.iledefrance-mobilites.fr/elevatorsInfo", nil)
 	if err != nil {
 		return nil, nil, err
 	}

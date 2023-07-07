@@ -2,21 +2,20 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/emembrives/dispotrains/dispotrains.webapp/src/environment"
 	"github.com/emembrives/dispotrains/dispotrains.webapp/src/storage"
+	"github.com/linxGnu/grocksdb"
+	"github.com/vmihailenco/msgpack/v5"
 
-	"github.com/eknkc/dateformat"
 	"github.com/gorilla/mux"
-	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 var (
-	session = createSessionOrDie()
+	session *grocksdb.DB = nil
 )
 
 type Line struct {
@@ -42,59 +41,12 @@ type DisplayStation struct {
 
 type LocElevator storage.Elevator
 
-type dataStatus struct {
-	Elevator   string
-	State      string
-	Lastupdate time.Time
-}
-
-func (e *LocElevator) LocalStatusDate() string {
-	return dateformat.FormatLocale(e.Status.LastUpdate, "ddd D MMM à HH:MM", dateformat.French)
-}
-
-func createSessionOrDie() *mgo.Session {
-	dbAddress := environment.GetMongoDbAddress()
-	session, err := mgo.Dial(dbAddress)
+func createSessionOrDie() *grocksdb.DB {
+	db, err := storage.GetDatabase()
 	if err != nil {
-		log.Panicf("Unable to connect to '%s': %v", dbAddress, err)
+		log.Panicf("Unable to get database: %v", err)
 	}
-	return session
-}
-
-// VoronoiHandler sends historical data for the Voronoi map.
-func VoronoiHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "GET")
-	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
-
-	cStatistics := session.DB("dispotrains").C("statistics")
-
-	var stats []bson.M = make([]bson.M, 0)
-	if err := cStatistics.Find(nil).All(&stats); err != nil {
-		log.Println(err)
-	}
-	var jsonData []bson.M = make([]bson.M, 0)
-	for _, stat := range stats {
-		delete(stat, "_id")
-		jsonData = append(jsonData, stat)
-	}
-	if err := json.NewEncoder(w).Encode(&jsonData); err != nil {
-		log.Println(err)
-	}
-}
-
-func GetLinesHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Methods", "GET")
-	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
-	w.Header().Set("Cache-control", "public, max-age=86400")
-
-	c := session.DB("dispotrains").C("lines")
-	var lines = make(LineSlice, 0)
-	if err := c.Find(nil).Sort("network", "id").All(&lines); err != nil {
-		log.Println(err)
-	}
-	json.NewEncoder(w).Encode(&lines)
+	return db
 }
 
 func GetStationsHandler(w http.ResponseWriter, req *http.Request) {
@@ -102,17 +54,22 @@ func GetStationsHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Add("Access-Control-Allow-Methods", "GET")
 	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
 
-	c := session.DB("dispotrains").C("stations")
-	var stations []bson.M
-	if err := c.Find(nil).All(&stations); err != nil {
-		log.Println(err)
+	ro := grocksdb.NewDefaultReadOptions()
+	defer ro.Destroy()
+	iter := session.NewIterator(ro)
+	defer iter.Close()
+
+	var stations []*storage.Station
+
+	for iter.Seek(storage.MakeKey(storage.BucketStations)); iter.ValidForPrefix(storage.MakeKey(storage.BucketStations)); iter.Next() {
+		var station storage.Station
+		err := msgpack.Unmarshal(iter.Value().Data(), &station)
+		if err != nil {
+			log.Panic(err)
+		}
+		stations = append(stations, &station)
 	}
-	var jsonStations []bson.M
-	for _, station := range stations {
-		delete(station, "_id")
-		jsonStations = append(jsonStations, station)
-	}
-	json.NewEncoder(w).Encode(&jsonStations)
+	json.NewEncoder(w).Encode(&stations)
 }
 
 func CacheRequest(h http.Handler) http.Handler {
@@ -139,15 +96,19 @@ func (s *FileHandlerWithDefault) Open(name string) (http.File, error) {
 }
 
 func main() {
+	flag.Parse()
+
+	session = createSessionOrDie()
 	defer session.Close()
+
+	go control()
+
 	r := mux.NewRouter()
-	r.HandleFunc("/app/GetLines/", GetLinesHandler)
 	r.HandleFunc("/app/GetStations/", GetStationsHandler)
-	r.HandleFunc("/app/AllStats/", VoronoiHandler)
-	r.HandleFunc("/app/Elevator/{id}", ElevatorHandler)
 	r.HandleFunc("/app/netStats/", NetworkStatsHandler)
+	r.HandleFunc("/app/Elevator/{id}", ElevatorHandler)
 	r.PathPrefix("/static/").Handler(CacheRequest(http.StripPrefix("/static/", http.FileServer(http.Dir("static")))))
-	r.PathPrefix("/").Handler(CacheRequest(http.FileServer(NewFileHandlerWithDefault("index.html", "dist"))))
+	r.PathPrefix("/").Handler(CacheRequest(http.FileServer(NewFileHandlerWithDefault("index.html", "web.v2"))))
 	http.Handle("/", r)
-	log.Fatal(http.ListenAndServe("0.0.0.0:9000", nil))
+	log.Panic(http.ListenAndServe("0.0.0.0:9000", nil))
 }
